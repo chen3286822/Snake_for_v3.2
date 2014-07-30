@@ -3,6 +3,22 @@
 
 #include "cocos2d.h"
 
+struct Block
+{
+	cocos2d::Point m_iPos;
+};
+#define MAPWIDTH 30
+#define MAPHEIGHT 20
+class SnakeMap : public cocos2d::Node
+{
+public:
+	virtual bool init();
+	virtual void onEnter();
+	virtual void onExit();
+private:
+	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
+};
+
 class MapLayer : public cocos2d::Layer
 {
 public:
@@ -22,6 +38,7 @@ public:
 	virtual void update(float dt) override;
 
 private:
+	SnakeMap m_iMap;
 	cocos2d::Sprite3D* m_pBox{nullptr};
 };
 
