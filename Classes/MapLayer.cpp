@@ -48,33 +48,51 @@ bool MapLayer::init()
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
 
-    /////////////////////////////
-    // 3. add your codes below...
+	std::string fileName = "models/box2.c3b";
+	m_pBox = Sprite3D::create(fileName);
+	m_pBox->setScale(3);
+	m_pBox->setRotation3D(Vec3(60, 60, 0));
+	addChild(m_pBox);
+	m_pBox->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
+	scheduleUpdate();
 
-    // add a label shows "Hello World"
-    // create and initialize a label
-    
-    auto label = Label::createWithTTF("Hello World", "fonts/Marker Felt.ttf", 24);
-    
-    // position the label on the center of the screen
-    label->setPosition(Vec2(origin.x + visibleSize.width/2,
-                            origin.y + visibleSize.height - label->getContentSize().height));
-
-    // add the label as a child to this layer
-    this->addChild(label, 1);
-
-    // add "HelloWorld" splash screen"
-    auto sprite = Sprite::create("HelloWorld.png");
-
-    // position the sprite on the center of the screen
-    sprite->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2 + origin.y));
-
-    // add the sprite as a child to this layer
-    this->addChild(sprite, 0);
+// 	auto animation = Animation3D::create(fileName);
+// 	if (animation)
+// 	{
+// 		auto animate = Animate3D::create(animation);
+// 		bool inverse = (std::rand() % 3 == 0);
+// 
+// 		int rand2 = std::rand();
+// 		float speed = 1.0f;
+// 		if (rand2 % 3 == 1)
+// 		{
+// 			speed = animate->getSpeed() + CCRANDOM_0_1();
+// 		}
+// 		else if (rand2 % 3 == 2)
+// 		{
+// 			speed = animate->getSpeed() - 0.5 * CCRANDOM_0_1();
+// 		}
+// 		animate->setSpeed(inverse ? -speed : speed);
+// 
+// 		sprite->runAction(RepeatForever::create(animate));
+// 	}
     
     return true;
 }
 
+void MapLayer::update(float dt)
+{
+	if (m_pBox)
+	{
+		auto vec = m_pBox->getRotation3D();
+		auto degreeY = vec.y;
+		degreeY += dt * 20;
+		if (degreeY > 360)
+			degreeY -= 360;
+		m_pBox->setRotation3D(Vec3(vec.x, degreeY, vec.z));
+	}
+	
+}
 
 void MapLayer::menuCloseCallback(Ref* pSender)
 {

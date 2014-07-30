@@ -41,4 +41,9 @@
       <Filter>resource</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Resources\models\box2.png">
+      <Filter>resource</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

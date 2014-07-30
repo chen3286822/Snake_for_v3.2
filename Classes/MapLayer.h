@@ -17,6 +17,12 @@ public:
     
     // implement the "static create()" method manually
     CREATE_FUNC(MapLayer);
+
+public:
+	virtual void update(float dt) override;
+
+private:
+	cocos2d::Sprite3D* m_pBox{nullptr};
 };
 
 #endif // __HELLOWORLD_SCENE_H__
