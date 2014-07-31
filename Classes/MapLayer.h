@@ -3,6 +3,8 @@
 
 #include "cocos2d.h"
 
+#define DEBUG_DRAW
+
 struct Block
 {
 	cocos2d::Point m_iPos;
@@ -12,9 +14,11 @@ struct Block
 class SnakeMap : public cocos2d::Node
 {
 public:
+	CREATE_FUNC(SnakeMap);
 	virtual bool init();
-	virtual void onEnter();
-	virtual void onExit();
+	//virtual void draw(cocos2d::Renderer *renderer, const cocos2d::Mat4& transform, uint32_t flags)
+	virtual void onEnter(){}
+	virtual void onExit(){}
 private:
 	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
 };
@@ -38,7 +42,7 @@ public:
 	virtual void update(float dt) override;
 
 private:
-	SnakeMap m_iMap;
+	SnakeMap* m_pMap{ nullptr };
 	cocos2d::Sprite3D* m_pBox{nullptr};
 };
 

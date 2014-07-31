@@ -1,6 +1,41 @@
 #include "MapLayer.h"
+#include "VisibleRect.h"
 
 USING_NS_CC;
+
+bool SnakeMap::init()
+{
+	if (!Node::init())
+	{
+		return false;
+	}
+
+	//init blocks
+	for (int i = 0; i < MAPWIDTH;i++)
+	{
+		for (int j = 0; j < MAPHEIGHT;j++)
+			m_iBlocks[i][j].m_iPos = Point(i,j);
+	}
+
+
+#ifdef DEBUG_DRAW
+	auto drawLines = DrawNode::create();
+	this->addChild(drawLines, 1);
+	auto visualRect = VisibleRect::getVisibleRect();
+	auto length = visualRect.size.width / MAPWIDTH;
+	for (int i = 1; i < MAPWIDTH;i++)
+	{
+		drawLines->drawSegment(Vec2(i*length, 0) + visualRect.origin, Vec2(i*length, visualRect.size.height) + visualRect.origin, 1, Color4F(0.4, 0.4, 0.4, 1));
+	}
+ 	for (int j = 1; j < MAPHEIGHT; j++)
+ 	{
+ 		drawLines->drawSegment(Vec2(0, j*length) + visualRect.origin, Vec2(visualRect.size.width, j*length) + visualRect.origin, 1, Color4F(0.4, 0.4, 0.4, 1));
+ 	}
+#endif
+	
+	return true;
+}
+
 
 Scene* MapLayer::createScene()
 {
@@ -30,9 +65,6 @@ bool MapLayer::init()
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
-    /////////////////////////////
-    // 2. add a menu item with "X" image, which is clicked to quit the program
-    //    you may modify it.
 
     // add a "close" icon to exit the progress. it's an autorelease object
     auto closeItem = MenuItemImage::create(
@@ -48,13 +80,17 @@ bool MapLayer::init()
     menu->setPosition(Vec2::ZERO);
     this->addChild(menu, 1);
 
+ 	m_pMap = SnakeMap::create();
+ 	this->addChild(m_pMap,1);
+
 	std::string fileName = "models/box2.c3b";
 	m_pBox = Sprite3D::create(fileName);
-	m_pBox->setScale(3);
-	m_pBox->setRotation3D(Vec3(60, 60, 0));
-	addChild(m_pBox);
-	m_pBox->setPosition(Vec2(visibleSize.width / 2 + origin.x, visibleSize.height / 2 + origin.y));
-	scheduleUpdate();
+	//m_pBox->setAnchorPoint(Vec2(0, 0));	//not work for 3D sprite
+	//m_pBox->setScale(3);
+	//m_pBox->setRotation3D(Vec3(60, 60, 0));
+	this->addChild(m_pBox,2);
+	m_pBox->setPosition(Vec2(0 + origin.x, 0+ origin.y));
+	//scheduleUpdate();
 
 // 	auto animation = Animation3D::create(fileName);
 // 	if (animation)
@@ -84,12 +120,15 @@ void MapLayer::update(float dt)
 {
 	if (m_pBox)
 	{
-		auto vec = m_pBox->getRotation3D();
-		auto degreeY = vec.y;
-		degreeY += dt * 20;
-		if (degreeY > 360)
-			degreeY -= 360;
-		m_pBox->setRotation3D(Vec3(vec.x, degreeY, vec.z));
+		auto pos = m_pBox->getPosition();
+		auto offset = dt * 20;
+		m_pBox->setPosition(Vec2(pos.x + offset, pos.y));
+// 		auto vec = m_pBox->getRotation3D();
+// 		auto degreeY = vec.y;
+// 		degreeY += dt * 20;
+// 		if (degreeY > 360)
+// 			degreeY -= 360;
+// 		m_pBox->setRotation3D(Vec3(vec.x, degreeY, vec.z));
 	}
 	
 }

@@ -27,6 +27,9 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // set FPS. the default value is 1.0/60 if you don't call this
     director->setAnimationInterval(1.0 / 60);
 
+	//set the projection
+	director->setProjection(Director::Projection::_2D);
+
     // create a scene. it's an autorelease object
     auto scene = MapLayer::createScene();
 
