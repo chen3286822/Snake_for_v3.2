@@ -83,13 +83,13 @@ bool MapLayer::init()
  	m_pMap = SnakeMap::create();
  	this->addChild(m_pMap,1);
 
-	std::string fileName = "models/box2.c3b";
+	std::string fileName = "models/box.c3b";
 	m_pBox = Sprite3D::create(fileName);
 	//m_pBox->setAnchorPoint(Vec2(0, 0));	//not work for 3D sprite
 	//m_pBox->setScale(3);
 	//m_pBox->setRotation3D(Vec3(60, 60, 0));
 	this->addChild(m_pBox,2);
-	m_pBox->setPosition(Vec2(0 + origin.x, 0+ origin.y));
+	m_pBox->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2+ origin.y));
 	//scheduleUpdate();
 
 // 	auto animation = Animation3D::create(fileName);
