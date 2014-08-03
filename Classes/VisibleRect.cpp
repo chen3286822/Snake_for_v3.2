@@ -23,6 +23,7 @@
  ****************************************************************************/
 
 #include "VisibleRect.h"
+#include "GameDefine.h"
 
 USING_NS_CC;
 
@@ -93,4 +94,10 @@ Vec2 VisibleRect::rightBottom()
 {
     lazyInit();
     return Vec2(s_visibleRect.origin.x+s_visibleRect.size.width, s_visibleRect.origin.y);
+}
+
+int VisibleRect::getGridLength()
+{
+	lazyInit();
+	return (int)(s_visibleRect.size.width / MAPWIDTH);
 }

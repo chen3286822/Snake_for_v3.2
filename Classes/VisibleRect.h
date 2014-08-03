@@ -17,9 +17,12 @@ public:
     static cocos2d::Vec2 rightTop();
     static cocos2d::Vec2 leftBottom();
     static cocos2d::Vec2 rightBottom();
+
+	static int getGridLength();
 private:
     static void lazyInit();
     static cocos2d::Rect s_visibleRect;
+	static int s_nGridLength;
 };
 
 #endif /* __VISIBLERECT_H__ */

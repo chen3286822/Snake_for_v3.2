@@ -1,5 +1,6 @@
 #include "MapLayer.h"
 #include "VisibleRect.h"
+#include "Snake.h"
 
 USING_NS_CC;
 
@@ -89,8 +90,17 @@ bool MapLayer::init()
 	//m_pBox->setScale(3);
 	//m_pBox->setRotation3D(Vec3(60, 60, 0));
 	this->addChild(m_pBox,2);
-	m_pBox->setPosition(Vec2(visibleSize.width/2 + origin.x, visibleSize.height/2+ origin.y));
+	m_pBox->setPosition(Vec2(visibleSize.width/2 + 16 + (-10)*32 + origin.x, visibleSize.height/2+16 + (-10)*32+ origin.y));
+	m_iLastPt = m_pBox->getPosition();
+	m_pBox->setContentSize(Size(VisibleRect::getGridLength(), VisibleRect::getGridLength()));
+	m_pBox->setAnchorPoint(Vec2(1,0));
+	auto rotateAction = RotateBy::create(5.0f, Vec3(0,0,90));
+
+	m_pBox->runAction(rotateAction);
 	//scheduleUpdate();
+
+	m_pSnake = Snake::create();
+	this->addChild(m_pSnake, 2);
 
 // 	auto animation = Animation3D::create(fileName);
 // 	if (animation)
@@ -121,8 +131,20 @@ void MapLayer::update(float dt)
 	if (m_pBox)
 	{
 		auto pos = m_pBox->getPosition();
-		auto offset = dt * 20;
-		m_pBox->setPosition(Vec2(pos.x + offset, pos.y));
+		if (pos.x - m_iLastPt.x > 32)
+		{
+			m_pBox->setPosition(Vec2(pos.x, pos.y + 32));
+			m_iLastPt = m_pBox->getPosition();
+			CCLog("%f\n", m_fLastTime);
+			m_fLastTime = 0;
+		}
+		else
+		{
+			auto offset = dt * 40;
+			m_pBox->setPosition(Vec2(pos.x + offset, pos.y));
+			m_fLastTime += dt;
+		}
+
 // 		auto vec = m_pBox->getRotation3D();
 // 		auto degreeY = vec.y;
 // 		degreeY += dt * 20;

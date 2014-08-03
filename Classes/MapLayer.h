@@ -1,7 +1,8 @@
-#ifndef __HELLOWORLD_SCENE_H__
-#define __HELLOWORLD_SCENE_H__
+#ifndef __MAPLAYER_SCENE_H__
+#define __MAPLAYER_SCENE_H__
 
 #include "cocos2d.h"
+#include "GameDefine.h"
 
 #define DEBUG_DRAW
 
@@ -9,8 +10,7 @@ struct Block
 {
 	cocos2d::Point m_iPos;
 };
-#define MAPWIDTH 30
-#define MAPHEIGHT 20
+
 class SnakeMap : public cocos2d::Node
 {
 public:
@@ -23,6 +23,7 @@ private:
 	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
 };
 
+class Snake;
 class MapLayer : public cocos2d::Layer
 {
 public:
@@ -43,7 +44,10 @@ public:
 
 private:
 	SnakeMap* m_pMap{ nullptr };
+	Snake* m_pSnake{ nullptr };
 	cocos2d::Sprite3D* m_pBox{nullptr};
+	cocos2d::Vec2 m_iLastPt;
+	float m_fLastTime{ 0.0f };
 };
 
 #endif // __HELLOWORLD_SCENE_H__

@@ -28,7 +28,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     director->setAnimationInterval(1.0 / 60);
 
 	//set the projection
-	director->setProjection(Director::Projection::_2D);
+	director->setProjection(Director::Projection::_3D);
 
     // create a scene. it's an autorelease object
     auto scene = MapLayer::createScene();

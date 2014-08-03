@@ -30,6 +30,9 @@
     <ClCompile Include="..\Classes\VisibleRect.cpp">
       <Filter>Classes\Help</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\Snake.cpp">
+      <Filter>Classes\Layer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -42,6 +45,12 @@
       <Filter>Classes\Layer</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\VisibleRect.h">
+      <Filter>Classes\Help</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Snake.h">
+      <Filter>Classes\Layer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\GameDefine.h">
       <Filter>Classes\Help</Filter>
     </ClInclude>
   </ItemGroup>
