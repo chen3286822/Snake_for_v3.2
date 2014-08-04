@@ -61,23 +61,23 @@ bool Snake::init()
 	auto body = BodyRect::create(fileName);
 	this->addChild(body, 1);
 	m_lpBody.push_back(body);
-	body->setPosition(m_pHead->getPosition() + Vec2(gridLength,0));
-	body->setMapIndex(m_pHead->getMapIndex() + Vec2(1, 0));
+	body->setPosition(m_pHead->getPosition() + Vec2(0,-gridLength));
+	body->setMapIndex(m_pHead->getMapIndex() + Vec2(0, -1));
 
 	m_pTail = BodyRect::create(fileName);
 	this->addChild(m_pTail, 1);
 	m_lpBody.push_back(m_pTail);
-	m_pTail->setPosition(body->getPosition() + Vec2(gridLength, 0));
-	m_pTail->setMapIndex(body->getMapIndex() + Vec2(1, 0));
+	m_pTail->setPosition(body->getPosition() + Vec2(0, -gridLength));
+	m_pTail->setMapIndex(body->getMapIndex() + Vec2(0, -1));
 
 	//init snake direction, content size
 	for (auto bodyRect : m_lpBody)
 	{
 		bodyRect->ignoreAnchorPointForPosition(true);
 		bodyRect->setContentSize(Size(VisibleRect::getGridLength(), VisibleRect::getGridLength()));
-		bodyRect->setDirection(eDir_Left);
+		bodyRect->setDirection(eDir_Up);
 	}
-	m_eLastDir = eDir_Left;
+	m_eLastDir = eDir_Up;
 
 	crawl();
 	return true;
@@ -95,7 +95,7 @@ void Snake::setDirection(eDirection dir)
 	}
 }
 
-void Snake::setNextAction(BodyAction action, BodyRect* bodyRect, eDirection previousDir)
+void Snake::setMoveAction(BodyRect* bodyRect)
 {
 	auto moveDistance = [=](eDirection dir, Vec2& indexOffset) -> Vec2
 	{
@@ -123,20 +123,32 @@ void Snake::setNextAction(BodyAction action, BodyRect* bodyRect, eDirection prev
 		return Vec2(0, 0);
 	};
 
-	auto rotateArc = [&](BodyRect* first, eDirection previousDir) -> Vec3
+	auto moveOffset = Vec2();
+	auto moveAction = MoveBy::create(2.0f, moveDistance(bodyRect->getDirection(), moveOffset));
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect, bodyRect->getMapIndex() + moveOffset));
+	auto sequenceAction = Sequence::create(moveAction, doneAction, NULL);
+	bodyRect->runAction(sequenceAction);
+	bodyRect->setMoving(true);
+}
+
+void Snake::setRotateAction(BodyRect* bodyRect, eDirection previousDir)
+{
+	auto rotateArc = [=](BodyRect* first, eDirection previousDir, Vec2& indexOffset) -> Vec3
 	{
 		auto fDir = first->getDirection();
 		if (fDir == eDir_Up)
 		{
 			if (previousDir == eDir_Left)
 			{
-				first->setAnchorPoint(Vec2(0, 0));
-				return Vec3(0, 0, -90);
+				first->setAnchorPoint(Vec2(0.5, 0.5));
+				indexOffset = Vec2(0, 1);
+				return Vec3(0, 0, 90);
 			}
 			else if (previousDir == eDir_Right)
 			{
-				first->setAnchorPoint(Vec2(1, 0));
-				return Vec3(0, 0, 90);
+				first->setAnchorPoint(Vec2(-0.5, 0.5));
+				indexOffset = Vec2(0, 1);
+				return Vec3(0, 0, -90);
 			}
 		}
 		else if (fDir == eDir_Down)
@@ -144,62 +156,59 @@ void Snake::setNextAction(BodyAction action, BodyRect* bodyRect, eDirection prev
 			if (previousDir == eDir_Left)
 			{
 				first->setAnchorPoint(Vec2(0.5, -0.5));
+				first->setPosition(first->getMapIndex()*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin);
+				indexOffset = Vec2(0, -1);
 				return Vec3(0, 0, -90);
+				//return Vec3();
 			}
 			else if (previousDir == eDir_Right)
 			{
-				first->setAnchorPoint(Vec2(1, 1));
-				return Vec3(0, 0, -90);
+				first->setAnchorPoint(Vec2(-0.5, -0.5));
+				indexOffset = Vec2(0, -1);
+				return Vec3(0, 0, 90);
 			}
 		}
 		else if (fDir == eDir_Left)
 		{
 			if (previousDir == eDir_Up)
 			{
-				first->setAnchorPoint(Vec2(1, 1));
-				return Vec3(0, 0, 90);
+				first->setAnchorPoint(Vec2(-0.5, -0.5));
+				indexOffset = Vec2(-1, 0);
+				return Vec3(0, 0, -90);
 			}
 			else if (previousDir == eDir_Down)
 			{
-				first->setAnchorPoint(Vec2(0.5, -0.5));
-				return Vec3(0, 0, -90);
+				first->setAnchorPoint(Vec2(-0.5, 0.5));
+				indexOffset = Vec2(-1, 0);
+				return Vec3(0, 0, 90);
 			}
 		}
 		else if (fDir == eDir_Right)
 		{
 			if (previousDir == eDir_Up)
 			{
-				first->setAnchorPoint(Vec2(0, 1));
-				return Vec3(0, 0, -90);
+				first->setAnchorPoint(Vec2(0.5, -0.5));
+				indexOffset = Vec2(1, 0);
+				return Vec3(0, 0, 90);
 			}
 			else if (previousDir == eDir_Down)
 			{
-				first->setAnchorPoint(Vec2(0, 0));
-				return Vec3(0, 0, 90);
+				first->setAnchorPoint(Vec2(0.5, 0.5));
+				indexOffset = Vec2(1, 0);
+				return Vec3(0, 0, -90);
 			}
 		}
 
 		return Vec3();
 	};
 
-	if (action == BodyAction::eBodyAction_Move)
-	{
-		auto moveOffset = Vec2();
-		auto moveAction = MoveBy::create(5.0f, moveDistance(bodyRect->getDirection(), moveOffset));
-		auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect, bodyRect->getMapIndex() + moveOffset));
-		auto sequenceAction = Sequence::create(moveAction, doneAction, NULL);
-		bodyRect->runAction(sequenceAction);
-		bodyRect->setMoving(true);
-	}
-	else if (action == BodyAction::eBodyAction_Rotate)
-	{
-		auto arc = rotateArc(bodyRect, previousDir);
-		auto rotateAction = RotateBy::create(5.0f, arc);
-		auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
-		auto sequenceAction = Sequence::create(rotateAction, doneAction, NULL);
-		bodyRect->runAction(sequenceAction);
-		bodyRect->setMoving(true);
-	}
+	auto rotateOffset = Vec2();
+	auto arc = rotateArc(bodyRect, previousDir, rotateOffset);
+	auto rotateAction = RotateBy::create(2.0f, arc);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect, bodyRect->getMapIndex() + rotateOffset));
+	auto sequenceAction = Sequence::create(rotateAction, doneAction, NULL);
+	bodyRect->runAction(sequenceAction);
+	bodyRect->setMoving(true);
 }
 
 void Snake::crawl()
@@ -214,12 +223,12 @@ void Snake::crawl()
 			//they are the same, so body rect just move across the original direction
 			if ((*next)->getDirection() == (*it)->getDirection())
 			{
-				setNextAction(BodyAction::eBodyAction_Move, *it);
+				setMoveAction(*it);
 			}
 			//the body rect will turn over
 			else
 			{
-				setNextAction(BodyAction::eBodyAction_Rotate, *it, (*next)->getDirection());
+				setRotateAction(*it, (*next)->getDirection());
 			}
 		}
 		//the tail should compare with the m_eLastDir
@@ -227,11 +236,11 @@ void Snake::crawl()
 		{
 			if (m_eLastDir == (*it)->getDirection())
 			{
-				setNextAction(BodyAction::eBodyAction_Move, *it);
+				setMoveAction(*it);
 			}
 			else
 			{
-				setNextAction(BodyAction::eBodyAction_Rotate, *it, m_eLastDir);
+				setRotateAction(*it, m_eLastDir);
 			}
 		}
 	}
@@ -242,6 +251,8 @@ void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
 	if (bodyRect)
 	{
 		bodyRect->setMoving(false);
+		//reset the map index
+		bodyRect->setMapIndex(newMapIndex);
 		//reset the position
 		bodyRect->setPosition(newMapIndex*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin);
 		//reset the anchor

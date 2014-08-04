@@ -1,7 +1,6 @@
 #include "MapLayer.h"
 #include "VisibleRect.h"
 #include "Snake.h"
-
 USING_NS_CC;
 
 bool SnakeMap::init()
@@ -80,18 +79,20 @@ bool MapLayer::init()
 	//m_pBox->setRotation3D(Vec3(60, 60, 0));
 	this->addChild(m_pBox,2);
 	m_pBox->setPosition(Vec2(visibleSize.width/2 + 16 +  (-5)*32 + origin.x, visibleSize.height/2 + 16 + (-5)*32+ origin.y));
-	m_iLastPt = m_pBox->getPosition();
-	m_pBox->ignoreAnchorPointForPosition(true);
-	m_pBox->setContentSize(Size(VisibleRect::getGridLength(), VisibleRect::getGridLength()));
-	m_pBox->setAnchorPoint(Vec2(0.5,0.5));
+	m_iLastPt = m_pBox->getPosition(); 
+	//m_pBox->ignoreAnchorPointForPosition(true);
+	//m_pBox->setContentSize(Size(VisibleRect::getGridLength(), VisibleRect::getGridLength()));
+	//m_pBox->setAnchorPoint(Vec2(0.5,0.5));
 	log("%f, %f",m_pBox->getPositionX(),m_pBox->getPositionY());
+
 	auto rotateAction = RotateBy::create(2.5, Vec3(0,0,90));
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(MapLayer::getPos, this, m_pBox));
 	auto rotateAction2 = RotateBy::create(2.5, Vec3(0, 0, 90));
 	auto moveAction = MoveBy::create(2.5, Vec2(VisibleRect::getGridLength(),0));
 	auto moveAction2 = MoveTo::create(2.5, m_pBox->getPosition() + Vec2(32,0));
-	auto sequenceAction = Sequence::create(rotateAction, doneAction,NULL);
-	m_pBox->runAction(sequenceAction);
+	auto sequenceAction = Sequence::create(rotateAction, doneAction, NULL);
+	auto spawnAction = Spawn::create(rotateAction,moveAction,NULL);
+	m_pBox->runAction(spawnAction);
 	//scheduleUpdate();
 
 	m_pSnake = Snake::create();

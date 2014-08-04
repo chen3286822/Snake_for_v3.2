@@ -44,12 +44,9 @@ private:
 	void crawl();
 	void setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex);	//according the m_eNextDirection value is set or not, decide next direction
 
-	enum class BodyAction
-	{
-		eBodyAction_Move,
-		eBodyAction_Rotate,
-	};
-	void setNextAction(BodyAction action, BodyRect* bodyRect, eDirection previousDir = eDir_None);
+
+	void setMoveAction(BodyRect* bodyRect);
+	void setRotateAction(BodyRect* bodyRect, eDirection previousDir = eDir_None);
 };
 
 #endif
