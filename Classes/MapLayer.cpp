@@ -62,24 +62,13 @@ bool MapLayer::init()
     {
         return false;
     }
+
+	m_pKeyboardListener = EventListenerKeyboard::create();
+	m_pKeyboardListener->onKeyReleased = CC_CALLBACK_2(MapLayer::onKeyReleased, this);
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(m_pKeyboardListener, this);
     
     Size visibleSize = Director::getInstance()->getVisibleSize();
     Vec2 origin = Director::getInstance()->getVisibleOrigin();
-
-
-    // add a "close" icon to exit the progress. it's an autorelease object
-    auto closeItem = MenuItemImage::create(
-                                           "CloseNormal.png",
-                                           "CloseSelected.png",
-                                           CC_CALLBACK_1(MapLayer::menuCloseCallback, this));
-    
-	closeItem->setPosition(Vec2(origin.x + visibleSize.width - closeItem->getContentSize().width/2 ,
-                                origin.y + closeItem->getContentSize().height/2));
-
-    // create menu, it's an autorelease object
-    auto menu = Menu::create(closeItem, NULL);
-    menu->setPosition(Vec2::ZERO);
-    this->addChild(menu, 1);
 
  	m_pMap = SnakeMap::create();
  	this->addChild(m_pMap,1);
@@ -90,13 +79,19 @@ bool MapLayer::init()
 	//m_pBox->setScale(3);
 	//m_pBox->setRotation3D(Vec3(60, 60, 0));
 	this->addChild(m_pBox,2);
-	m_pBox->setPosition(Vec2(visibleSize.width/2 + 16 + (-10)*32 + origin.x, visibleSize.height/2+16 + (-10)*32+ origin.y));
+	m_pBox->setPosition(Vec2(visibleSize.width/2 + 16 +  (-5)*32 + origin.x, visibleSize.height/2 + 16 + (-5)*32+ origin.y));
 	m_iLastPt = m_pBox->getPosition();
+	m_pBox->ignoreAnchorPointForPosition(true);
 	m_pBox->setContentSize(Size(VisibleRect::getGridLength(), VisibleRect::getGridLength()));
-	m_pBox->setAnchorPoint(Vec2(1,0));
-	auto rotateAction = RotateBy::create(5.0f, Vec3(0,0,90));
-
-	m_pBox->runAction(rotateAction);
+	m_pBox->setAnchorPoint(Vec2(0.5,0.5));
+	log("%f, %f",m_pBox->getPositionX(),m_pBox->getPositionY());
+	auto rotateAction = RotateBy::create(2.5, Vec3(0,0,90));
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(MapLayer::getPos, this, m_pBox));
+	auto rotateAction2 = RotateBy::create(2.5, Vec3(0, 0, 90));
+	auto moveAction = MoveBy::create(2.5, Vec2(VisibleRect::getGridLength(),0));
+	auto moveAction2 = MoveTo::create(2.5, m_pBox->getPosition() + Vec2(32,0));
+	auto sequenceAction = Sequence::create(rotateAction, doneAction,NULL);
+	m_pBox->runAction(sequenceAction);
 	//scheduleUpdate();
 
 	m_pSnake = Snake::create();
@@ -126,6 +121,13 @@ bool MapLayer::init()
     return true;
 }
 
+void MapLayer::getPos(cocos2d::Sprite3D* snake)
+{
+	snake->setPosition(m_pBox->getPosition() + Vec2(0, 32));
+	snake->setAnchorPoint(Vec2(0, 0));
+	log("%f, %f", m_pBox->getPositionX(), m_pBox->getPositionY());
+}
+
 void MapLayer::update(float dt)
 {
 	if (m_pBox)
@@ -135,7 +137,7 @@ void MapLayer::update(float dt)
 		{
 			m_pBox->setPosition(Vec2(pos.x, pos.y + 32));
 			m_iLastPt = m_pBox->getPosition();
-			CCLog("%f\n", m_fLastTime);
+			log("%f\n", m_fLastTime);
 			m_fLastTime = 0;
 		}
 		else
@@ -155,16 +157,47 @@ void MapLayer::update(float dt)
 	
 }
 
-void MapLayer::menuCloseCallback(Ref* pSender)
+void MapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
 {
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WP8) || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT)
-	MessageBox("You pressed the close button. Windows Store Apps do not implement a close button.","Alert");
-    return;
-#endif
-
-    Director::getInstance()->end();
-
+	switch (keycode)
+	{
+	case EventKeyboard::KeyCode::KEY_ESCAPE:
+	{
+											   Director::getInstance()->end();
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    exit(0);
+											   exit(0);
 #endif
+	}
+		break;
+	case EventKeyboard::KeyCode::KEY_LEFT_ARROW:
+	case EventKeyboard::KeyCode::KEY_RIGHT_ARROW:
+	case EventKeyboard::KeyCode::KEY_UP_ARROW:
+	case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
+	{
+												   if (m_pSnake)
+												   {
+													   auto keyToDirection = [=](EventKeyboard::KeyCode key) -> eDirection
+													   {
+														   if (key == EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+															   return eDir_Left;
+														   else if (key == EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+															   return eDir_Right;
+														   else if (key == EventKeyboard::KeyCode::KEY_UP_ARROW)
+															   return eDir_Up;
+														   else if (key == EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+															   return eDir_Down;
+														   return eDir_None;
+													   };
+													   m_pSnake->setDirection(keyToDirection(keycode));
+												   }
+	}
+		break;
+	case EventKeyboard::KeyCode::KEY_F1:
+	{
+										   Director::getInstance()->replaceScene(MapLayer::createScene());
+	}
+		break;
+	default:
+		break;
+	}
 }

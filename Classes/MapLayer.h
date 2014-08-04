@@ -33,14 +33,12 @@ public:
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
     virtual bool init();  
     
-    // a selector callback
-    void menuCloseCallback(cocos2d::Ref* pSender);
-    
     // implement the "static create()" method manually
     CREATE_FUNC(MapLayer);
 
 public:
 	virtual void update(float dt) override;
+	void onKeyReleased(cocos2d::EventKeyboard::KeyCode keycode, cocos2d::Event* event);
 
 private:
 	SnakeMap* m_pMap{ nullptr };
@@ -48,6 +46,9 @@ private:
 	cocos2d::Sprite3D* m_pBox{nullptr};
 	cocos2d::Vec2 m_iLastPt;
 	float m_fLastTime{ 0.0f };
+	cocos2d::EventListenerKeyboard* m_pKeyboardListener{ nullptr };
+
+	void getPos(cocos2d::Sprite3D* snake);
 };
 
 #endif // __HELLOWORLD_SCENE_H__

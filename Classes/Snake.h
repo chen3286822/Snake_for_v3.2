@@ -12,12 +12,17 @@ public:
 
 	void setDirection(eDirection direction);
 	eDirection getDirection(){ return m_eDirection; }
+
 	void setMoving(bool bMove){ m_bMoving = bMove; }
 	bool isMoving(){return m_bMoving; }
+
+	void setMapIndex(cocos2d::Vec2 index);
+	cocos2d::Vec2 getMapIndex(){ return m_mapIndex; }
 private:
 	cocos2d::Sprite3D* m_pModel{ nullptr };
 	eDirection m_eDirection{ eDir_None };
 	bool m_bMoving{ false };
+	cocos2d::Vec2 m_mapIndex;
 };
 
 class Snake : public cocos2d::Node
@@ -37,7 +42,14 @@ private:
 	eDirection m_eNextDirection{ eDir_None };	//next direction set by player
 
 	void crawl();
-	void setNextDirection(BodyRect* bodyRect);	//according the m_eNextDirection value is set or not, decide next direction
+	void setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex);	//according the m_eNextDirection value is set or not, decide next direction
+
+	enum class BodyAction
+	{
+		eBodyAction_Move,
+		eBodyAction_Rotate,
+	};
+	void setNextAction(BodyAction action, BodyRect* bodyRect, eDirection previousDir = eDir_None);
 };
 
 #endif
