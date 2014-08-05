@@ -70,14 +70,15 @@ bool Snake::init()
 	m_pTail->setPosition(body->getPosition() + Vec2(0, -gridLength));
 	m_pTail->setMapIndex(body->getMapIndex() + Vec2(0, -1));
 
-	//init snake direction, content size
+	//init snake direction
 	for (auto bodyRect : m_lpBody)
 	{
-		bodyRect->ignoreAnchorPointForPosition(true);
-		bodyRect->setContentSize(Size(VisibleRect::getGridLength(), VisibleRect::getGridLength()));
 		bodyRect->setDirection(eDir_Up);
 	}
 	m_eLastDir = eDir_Up;
+
+	//init snake speed
+	m_fMoveSpeed = 32.0f;
 
 	crawl();
 	return true;
@@ -124,7 +125,7 @@ void Snake::setMoveAction(BodyRect* bodyRect)
 	};
 
 	auto moveOffset = Vec2();
-	auto moveAction = MoveBy::create(2.0f, moveDistance(bodyRect->getDirection(), moveOffset));
+	auto moveAction = MoveBy::create(VisibleRect::getGridLength()/m_fMoveSpeed, moveDistance(bodyRect->getDirection(), moveOffset));
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect, bodyRect->getMapIndex() + moveOffset));
 	auto sequenceAction = Sequence::create(moveAction, doneAction, NULL);
 	bodyRect->runAction(sequenceAction);
@@ -140,13 +141,11 @@ void Snake::setRotateAction(BodyRect* bodyRect, eDirection previousDir)
 		{
 			if (previousDir == eDir_Left)
 			{
-				first->setAnchorPoint(Vec2(0.5, 0.5));
 				indexOffset = Vec2(0, 1);
 				return Vec3(0, 0, 90);
 			}
 			else if (previousDir == eDir_Right)
 			{
-				first->setAnchorPoint(Vec2(-0.5, 0.5));
 				indexOffset = Vec2(0, 1);
 				return Vec3(0, 0, -90);
 			}
@@ -155,15 +154,11 @@ void Snake::setRotateAction(BodyRect* bodyRect, eDirection previousDir)
 		{
 			if (previousDir == eDir_Left)
 			{
-				first->setAnchorPoint(Vec2(0.5, -0.5));
-				first->setPosition(first->getMapIndex()*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin);
 				indexOffset = Vec2(0, -1);
 				return Vec3(0, 0, -90);
-				//return Vec3();
 			}
 			else if (previousDir == eDir_Right)
 			{
-				first->setAnchorPoint(Vec2(-0.5, -0.5));
 				indexOffset = Vec2(0, -1);
 				return Vec3(0, 0, 90);
 			}
@@ -172,13 +167,11 @@ void Snake::setRotateAction(BodyRect* bodyRect, eDirection previousDir)
 		{
 			if (previousDir == eDir_Up)
 			{
-				first->setAnchorPoint(Vec2(-0.5, -0.5));
 				indexOffset = Vec2(-1, 0);
 				return Vec3(0, 0, -90);
 			}
 			else if (previousDir == eDir_Down)
 			{
-				first->setAnchorPoint(Vec2(-0.5, 0.5));
 				indexOffset = Vec2(-1, 0);
 				return Vec3(0, 0, 90);
 			}
@@ -187,13 +180,11 @@ void Snake::setRotateAction(BodyRect* bodyRect, eDirection previousDir)
 		{
 			if (previousDir == eDir_Up)
 			{
-				first->setAnchorPoint(Vec2(0.5, -0.5));
 				indexOffset = Vec2(1, 0);
 				return Vec3(0, 0, 90);
 			}
 			else if (previousDir == eDir_Down)
 			{
-				first->setAnchorPoint(Vec2(0.5, 0.5));
 				indexOffset = Vec2(1, 0);
 				return Vec3(0, 0, -90);
 			}
@@ -202,11 +193,13 @@ void Snake::setRotateAction(BodyRect* bodyRect, eDirection previousDir)
 		return Vec3();
 	};
 
-	auto rotateOffset = Vec2();
-	auto arc = rotateArc(bodyRect, previousDir, rotateOffset);
-	auto rotateAction = RotateBy::create(2.0f, arc);
-	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect, bodyRect->getMapIndex() + rotateOffset));
-	auto sequenceAction = Sequence::create(rotateAction, doneAction, NULL);
+	auto moveOffset = Vec2();
+	auto arc = rotateArc(bodyRect, previousDir, moveOffset);
+	auto rotateAction = RotateBy::create(VisibleRect::getGridLength() / m_fMoveSpeed, arc);
+	auto moveAction = MoveBy::create(VisibleRect::getGridLength() / m_fMoveSpeed, moveOffset*VisibleRect::getGridLength());
+	auto spawnAction = Spawn::create(rotateAction, moveAction, NULL);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect, bodyRect->getMapIndex() + moveOffset));
+	auto sequenceAction = Sequence::create(spawnAction, doneAction, NULL);
 	bodyRect->runAction(sequenceAction);
 	bodyRect->setMoving(true);
 }
@@ -255,8 +248,6 @@ void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
 		bodyRect->setMapIndex(newMapIndex);
 		//reset the position
 		bodyRect->setPosition(newMapIndex*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin);
-		//reset the anchor
-		bodyRect->setAnchorPoint(Vec2(0,0));
 	}
 
 	for (auto body : m_lpBody)

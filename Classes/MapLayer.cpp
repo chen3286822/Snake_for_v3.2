@@ -25,11 +25,11 @@ bool SnakeMap::init()
 	auto length = visualRect.size.width / MAPWIDTH;
 	for (int i = 1; i < MAPWIDTH;i++)
 	{
-		drawLines->drawSegment(Vec2(i*length, 0) + visualRect.origin, Vec2(i*length, visualRect.size.height) + visualRect.origin, 1, Color4F(0.4, 0.4, 0.4, 1));
+		drawLines->drawSegment(Vec2(i*length, 0) + visualRect.origin, Vec2(i*length, visualRect.size.height) + visualRect.origin, 1, Color4F(0.4f, 0.4f, 0.4f, 1));
 	}
  	for (int j = 1; j < MAPHEIGHT; j++)
  	{
- 		drawLines->drawSegment(Vec2(0, j*length) + visualRect.origin, Vec2(visualRect.size.width, j*length) + visualRect.origin, 1, Color4F(0.4, 0.4, 0.4, 1));
+ 		drawLines->drawSegment(Vec2(0, j*length) + visualRect.origin, Vec2(visualRect.size.width, j*length) + visualRect.origin, 1, Color4F(0.4f, 0.4f, 0.4f, 1));
  	}
 #endif
 	

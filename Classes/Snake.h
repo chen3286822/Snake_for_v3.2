@@ -40,6 +40,7 @@ private:
 	std::list<BodyRect*> m_lpBody;
 	eDirection m_eLastDir{ eDir_None };		//save previous step the tail's direction
 	eDirection m_eNextDirection{ eDir_None };	//next direction set by player
+	float m_fMoveSpeed;
 
 	void crawl();
 	void setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex);	//according the m_eNextDirection value is set or not, decide next direction
