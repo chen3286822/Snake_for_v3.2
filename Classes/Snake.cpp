@@ -1,5 +1,6 @@
 #include "Snake.h"
 #include "VisibleRect.h"
+#include "MapLayer.h"
 
 USING_NS_CC;
 
@@ -49,22 +50,20 @@ bool Snake::init()
 	auto visualRect = VisibleRect::getVisibleRect();
 	auto gridLength = VisibleRect::getGridLength();
 
-	//init the snake model
-	std::string fileName = "models/box.c3b";
-	
-	m_pHead = BodyRect::create(fileName);
+	//init the snake model	
+	m_pHead = BodyRect::create(SnakeHeadModel);
 	this->addChild(m_pHead, 1);
 	m_lpBody.push_back(m_pHead);
 	m_pHead->setPosition(VisibleRect::center() + Vec2(gridLength / 2, gridLength/2));
-	m_pHead->setMapIndex((m_pHead->getPosition() - visualRect.origin )/ gridLength);
+	m_pHead->setMapIndex((m_pHead->getPosition() - visualRect.origin - VisibleRect::getHalfGridVec()) / gridLength);
 
-	auto body = BodyRect::create(fileName);
+	auto body = BodyRect::create(SnakeBodyModel);
 	this->addChild(body, 1);
 	m_lpBody.push_back(body);
 	body->setPosition(m_pHead->getPosition() + Vec2(0,-gridLength));
 	body->setMapIndex(m_pHead->getMapIndex() + Vec2(0, -1));
 
-	m_pTail = BodyRect::create(fileName);
+	m_pTail = BodyRect::create(SnakeTailModel);
 	this->addChild(m_pTail, 1);
 	m_lpBody.push_back(m_pTail);
 	m_pTail->setPosition(body->getPosition() + Vec2(0, -gridLength));
@@ -84,6 +83,40 @@ bool Snake::init()
 	return true;
 }
 
+void Snake::onEnter()
+{
+	Node::onEnter();
+
+	//set map block type
+	auto snakeMap = dynamic_cast<SnakeMap*>(getParent()->getChildByTag(eID_SnakeMap));
+	if (snakeMap)
+	{
+		for (auto bodyRect : m_lpBody)
+		{
+			auto index = bodyRect->getMapIndex();
+			snakeMap->setGridType(index, eType_Stop);
+		}
+	}
+}
+
+void Snake::pauseAll()
+{
+	for (auto bodyRect : m_lpBody)
+	{
+		bodyRect->pause();
+	}
+	pause();
+}
+
+void Snake::resumeAll()
+{
+	for (auto bodyRect : m_lpBody)
+	{
+		bodyRect->resume();
+	}
+	resume();
+}
+
 void Snake::setDirection(eDirection dir)
 {
 	if (m_pHead)
@@ -94,6 +127,11 @@ void Snake::setDirection(eDirection dir)
 			return;
 		m_eNextDirection = dir;
 	}
+}
+
+int Snake::getLength()
+{
+	return m_lpBody.size();
 }
 
 void Snake::setMoveAction(BodyRect* bodyRect)
@@ -243,11 +281,14 @@ void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
 {
 	if (bodyRect)
 	{
+		if (bodyRect == m_pTail)
+			m_tailLastMapIndex = bodyRect->getMapIndex();
+
 		bodyRect->setMoving(false);
 		//reset the map index
 		bodyRect->setMapIndex(newMapIndex);
 		//reset the position
-		bodyRect->setPosition(newMapIndex*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin);
+		bodyRect->setPosition(newMapIndex*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec());
 	}
 
 	for (auto body : m_lpBody)
@@ -256,6 +297,13 @@ void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
 			return;
 	}
 
+	//reset map block type
+	auto snakeMap = dynamic_cast<SnakeMap*>(getParent()->getChildByTag(eID_SnakeMap));
+	if (snakeMap)
+	{
+		snakeMap->setGridType(m_pHead->getMapIndex(), eType_Stop);
+		snakeMap->setGridType(m_tailLastMapIndex, eType_Empty);
+	}
 
 	//save the last direction
 	std::list<BodyRect*>::reverse_iterator previous = m_lpBody.rbegin();
@@ -278,6 +326,7 @@ void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
 		m_pHead->setDirection(m_eNextDirection);
 	}
 
+	//detect next grid
 	//call the crawl again
 	crawl();
 }

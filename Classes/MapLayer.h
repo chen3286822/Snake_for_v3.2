@@ -9,6 +9,8 @@
 struct Block
 {
 	cocos2d::Point m_iPos;
+	bool m_bOccupied{ false };
+	eType m_eType{ eType_Empty };
 };
 
 class SnakeMap : public cocos2d::Node
@@ -17,10 +19,22 @@ public:
 	CREATE_FUNC(SnakeMap);
 	virtual bool init();
 	//virtual void draw(cocos2d::Renderer *renderer, const cocos2d::Mat4& transform, uint32_t flags)
-	virtual void onEnter(){}
-	virtual void onExit(){}
+	virtual void onEnter();
+	//virtual void onExit(){}
+
+	//get all the movable blocks' sum, some map may contains some immovable blocks and should be excluded
+	int getMovableNumbers();
+
+	//get the grid's type
+	void setGridType(cocos2d::Vec2 index, eType type);
+	eType getGridType(cocos2d::Vec2 index);
+
+	void setOccupy(cocos2d::Vec2 index);
+	void addFood();
 private:
 	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
+
+	cocos2d::Vec2 m_foodIndex;
 };
 
 class Snake;

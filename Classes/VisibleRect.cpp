@@ -101,3 +101,10 @@ int VisibleRect::getGridLength()
 	lazyInit();
 	return (int)(s_visibleRect.size.width / MAPWIDTH);
 }
+
+cocos2d::Vec2 VisibleRect::getHalfGridVec()
+{
+	lazyInit();
+	auto halfLength = s_visibleRect.size.width / MAPWIDTH / 2;
+	return Vec2(halfLength, halfLength);
+}
