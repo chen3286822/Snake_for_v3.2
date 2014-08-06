@@ -10,13 +10,20 @@ public:
 	static BodyRect* create(const std::string &modelPath);
 	virtual bool initWithFile(const std::string &path);
 
-	//the move direction
-	void setDirection(eDirection direction);
-	eDirection getDirection(){ return m_eCurDirection; }
+	//current direction
+	CC_SYNTHESIZE(eDirection, m_eCurDirection, CurDirection);
+
+	//last move direction
+	CC_SYNTHESIZE(eDirection, m_eLastDirection, LastDirection);
+
+	//move destination
+	CC_SYNTHESIZE(cocos2d::Vec2, m_DestinationIndex, DestinationIndex);
 
 	//is moving
-	void setMoving(bool bMove){ m_bMoving = bMove; }
-	bool isMoving(){return m_bMoving; }
+	CC_SYNTHESIZE(bool, m_bMoving, Moving);
+
+	//move type from current position to the destination
+	CC_SYNTHESIZE(eMoveType, m_eMoveType, MoveType);
 
 	//the index in the snake map
 	void setMapIndex(cocos2d::Vec2 index);
@@ -24,11 +31,7 @@ public:
 
 private:
 	cocos2d::Sprite3D* m_pModel{ nullptr };
-	eDirection m_eCurDirection{ eDir_None };
-	eDirection m_eLastDirection{ eDir_None };
-	cocos2d::Vec2 m_DestinationIndex;
 	cocos2d::Vec2 m_mapIndex;
-	bool m_bMoving{ false };
 };
 
 class SnakeMapLayer;

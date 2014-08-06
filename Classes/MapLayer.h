@@ -8,11 +8,12 @@
 
 struct Block
 {
-	cocos2d::Point m_iPos;
+	cocos2d::Vec2 m_Index;
 	bool m_bOccupied{ false };
 	eType m_eType{ eType_Empty };
 };
 
+class BodyRect;
 class Snake;
 class SnakeMapLayer : public cocos2d::Layer
 {
@@ -32,6 +33,10 @@ public:
 
 	//get all the movable blocks' sum, some map may contains some immovable blocks and should be excluded
 	int getMovableNumbers();
+	
+	//set snake body rect's destination and move type
+	//just pass the ptr value to the map, so the snake doesn't need to check the map
+	void setDestinationOfBodyRect(BodyRect* bodyRect);
 
 	//get the grid's type
 	void setGridType(cocos2d::Vec2 index, eType type);
@@ -48,7 +53,7 @@ private:
 	float m_fLastTime{ 0.0f };
 	cocos2d::EventListenerKeyboard* m_pKeyboardListener{ nullptr };
 
-	void getPos(cocos2d::Sprite3D* snake);
+
 
 	void addFood();
 };
