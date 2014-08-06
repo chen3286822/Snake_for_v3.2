@@ -31,7 +31,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	director->setProjection(Director::Projection::_3D);
 
     // create a scene. it's an autorelease object
-    auto scene = MapLayer::createScene();
+    auto scene = SnakeMapLayer::createScene();
 
     // run
     director->runWithScene(scene);

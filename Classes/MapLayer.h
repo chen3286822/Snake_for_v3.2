@@ -13,32 +13,8 @@ struct Block
 	eType m_eType{ eType_Empty };
 };
 
-class SnakeMap : public cocos2d::Node
-{
-public:
-	CREATE_FUNC(SnakeMap);
-	virtual bool init();
-	//virtual void draw(cocos2d::Renderer *renderer, const cocos2d::Mat4& transform, uint32_t flags)
-	virtual void onEnter();
-	//virtual void onExit(){}
-
-	//get all the movable blocks' sum, some map may contains some immovable blocks and should be excluded
-	int getMovableNumbers();
-
-	//get the grid's type
-	void setGridType(cocos2d::Vec2 index, eType type);
-	eType getGridType(cocos2d::Vec2 index);
-
-	void setOccupy(cocos2d::Vec2 index);
-	void addFood();
-private:
-	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
-
-	cocos2d::Vec2 m_foodIndex;
-};
-
 class Snake;
-class MapLayer : public cocos2d::Layer
+class SnakeMapLayer : public cocos2d::Layer
 {
 public:
     // there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -48,14 +24,24 @@ public:
     virtual bool init();  
     
     // implement the "static create()" method manually
-    CREATE_FUNC(MapLayer);
+    CREATE_FUNC(SnakeMapLayer);
 
 public:
 	virtual void update(float dt) override;
 	void onKeyReleased(cocos2d::EventKeyboard::KeyCode keycode, cocos2d::Event* event);
 
+	//get all the movable blocks' sum, some map may contains some immovable blocks and should be excluded
+	int getMovableNumbers();
+
+	//get the grid's type
+	void setGridType(cocos2d::Vec2 index, eType type);
+	eType getGridType(cocos2d::Vec2 index);
+
+	void setOccupy(cocos2d::Vec2 index);
 private:
-	SnakeMap* m_pMap{ nullptr };
+	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
+	cocos2d::Vec2 m_foodIndex;
+
 	Snake* m_pSnake{ nullptr };
 	cocos2d::Sprite3D* m_pBox{nullptr};
 	cocos2d::Vec2 m_iLastPt;
@@ -63,6 +49,8 @@ private:
 	cocos2d::EventListenerKeyboard* m_pKeyboardListener{ nullptr };
 
 	void getPos(cocos2d::Sprite3D* snake);
+
+	void addFood();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

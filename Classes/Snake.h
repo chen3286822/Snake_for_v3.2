@@ -12,7 +12,7 @@ public:
 
 	//the move direction
 	void setDirection(eDirection direction);
-	eDirection getDirection(){ return m_eDirection; }
+	eDirection getDirection(){ return m_eCurDirection; }
 
 	//is moving
 	void setMoving(bool bMove){ m_bMoving = bMove; }
@@ -24,16 +24,19 @@ public:
 
 private:
 	cocos2d::Sprite3D* m_pModel{ nullptr };
-	eDirection m_eDirection{ eDir_None };
-	bool m_bMoving{ false };
+	eDirection m_eCurDirection{ eDir_None };
+	eDirection m_eLastDirection{ eDir_None };
+	cocos2d::Vec2 m_DestinationIndex;
 	cocos2d::Vec2 m_mapIndex;
+	bool m_bMoving{ false };
 };
 
+class SnakeMapLayer;
 class Snake : public cocos2d::Node
 {
 public:
-	CREATE_FUNC(Snake);
-	virtual bool init() override;
+	static Snake* create(SnakeMapLayer* snakeMap);
+	virtual bool initWithMap(SnakeMapLayer* snakeMap);
 	virtual void onEnter();
 
 	//pause all its body rects' actions and its own
@@ -55,6 +58,7 @@ public:
 	int getLength();
 
 private:
+	SnakeMapLayer* m_pSnakeMap{ nullptr };
 	BodyRect* m_pHead{ nullptr };
 	BodyRect* m_pTail{ nullptr };
 	std::list<BodyRect*> m_lpBody;

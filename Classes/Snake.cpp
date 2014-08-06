@@ -28,7 +28,7 @@ bool BodyRect::initWithFile(const std::string &path)
 
 void BodyRect::setDirection(eDirection direction)
 {
-	m_eDirection = direction;
+	m_eCurDirection = direction;
 }
 
 void BodyRect::setMapIndex(cocos2d::Vec2 index)
@@ -38,13 +38,28 @@ void BodyRect::setMapIndex(cocos2d::Vec2 index)
 	m_mapIndex = index;
 }
 
-bool Snake::init()
+Snake* Snake::create(SnakeMapLayer* snakeMap)
+{
+	if (!snakeMap)
+		CCASSERT(false, "the map should not be null!");
+
+	auto bodyRect = new Snake();
+	if (bodyRect && bodyRect->initWithMap(snakeMap))
+	{
+		bodyRect->autorelease();
+		return bodyRect;
+	}
+	CC_SAFE_DELETE(bodyRect);
+	return nullptr;
+}
+
+bool Snake::initWithMap(SnakeMapLayer* snakeMap)
 {
 	if (!Node::init())
 	{
 		return false;
 	}
-
+	m_pSnakeMap = snakeMap;
 	m_lpBody.clear();
 
 	auto visualRect = VisibleRect::getVisibleRect();
@@ -88,14 +103,10 @@ void Snake::onEnter()
 	Node::onEnter();
 
 	//set map block type
-	auto snakeMap = dynamic_cast<SnakeMap*>(getParent()->getChildByTag(eID_SnakeMap));
-	if (snakeMap)
+	for (auto bodyRect : m_lpBody)
 	{
-		for (auto bodyRect : m_lpBody)
-		{
-			auto index = bodyRect->getMapIndex();
-			snakeMap->setGridType(index, eType_Stop);
-		}
+		auto index = bodyRect->getMapIndex();
+		m_pSnakeMap->setGridType(index, eType_Snake);
 	}
 }
 
@@ -298,12 +309,8 @@ void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
 	}
 
 	//reset map block type
-	auto snakeMap = dynamic_cast<SnakeMap*>(getParent()->getChildByTag(eID_SnakeMap));
-	if (snakeMap)
-	{
-		snakeMap->setGridType(m_pHead->getMapIndex(), eType_Stop);
-		snakeMap->setGridType(m_tailLastMapIndex, eType_Empty);
-	}
+	m_pSnakeMap->setGridType(m_pHead->getMapIndex(), eType_Snake);
+	m_pSnakeMap->setGridType(m_tailLastMapIndex, eType_Empty);
 
 	//save the last direction
 	std::list<BodyRect*>::reverse_iterator previous = m_lpBody.rbegin();

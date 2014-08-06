@@ -22,14 +22,29 @@ enum eType
 	//wrong type, should not be set
 	eType_None,
 
+	//snake occupied
+	eType_Snake,
+
 	//there is food on the block
 	eType_Food,
 
-	//there is a score item
-	eType_Score,
+	//there is a score apple
+	eType_Apple,
 
-	//the block is blocked, maybe it's a wall or a body rect
-	eType_Stop,
+	//slow down star
+	eType_Star,
+
+	//speed up ball
+	eType_Ball,
+
+	//transfer door
+	eType_Door,
+
+	//the block is blocked
+	eType_Blocked,
+
+	//dead area, lightning by UFO
+	eType_Dead,
 
 	//the block is empty, the snake can crawl over
 	eType_Empty

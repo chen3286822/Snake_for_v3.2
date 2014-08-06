@@ -3,48 +3,7 @@
 #include "Snake.h"
 USING_NS_CC;
 
-bool SnakeMap::init()
-{
-	if (!Node::init())
-	{
-		return false;
-	}
-
-	//init blocks
-	for (int i = 0; i < MAPWIDTH;i++)
-	{
-		for (int j = 0; j < MAPHEIGHT;j++)
-			m_iBlocks[i][j].m_iPos = Point(i,j);
-	}
-
-
-#ifdef DEBUG_DRAW
-	auto drawLines = DrawNode::create();
-	this->addChild(drawLines, 1);
-	auto visualRect = VisibleRect::getVisibleRect();
-	auto length = visualRect.size.width / MAPWIDTH;
-	for (int i = 1; i < MAPWIDTH;i++)
-	{
-		drawLines->drawSegment(Vec2(i*length, 0) + visualRect.origin, Vec2(i*length, visualRect.size.height) + visualRect.origin, 1, Color4F(0.4f, 0.4f, 0.4f, 1));
-	}
- 	for (int j = 1; j < MAPHEIGHT; j++)
- 	{
- 		drawLines->drawSegment(Vec2(0, j*length) + visualRect.origin, Vec2(visualRect.size.width, j*length) + visualRect.origin, 1, Color4F(0.4f, 0.4f, 0.4f, 1));
- 	}
-#endif
-	
-	return true;
-}
-
-void SnakeMap::onEnter()
-{
-	Node::onEnter();
-
-	//init food
-	addFood();
-}
-
-void SnakeMap::setOccupy(Vec2 index)
+void SnakeMapLayer::setOccupy(Vec2 index)
 {
 	int x = (int)index.x;
 	int y = (int)index.y;
@@ -55,12 +14,12 @@ void SnakeMap::setOccupy(Vec2 index)
 }
 
 //modify later
-int SnakeMap::getMovableNumbers()
+int SnakeMapLayer::getMovableNumbers()
 {
 	return MAPWIDTH*MAPHEIGHT;
 }
 
-void SnakeMap::setGridType(cocos2d::Vec2 index, eType type)
+void SnakeMapLayer::setGridType(cocos2d::Vec2 index, eType type)
 {
 	int x = (int)index.x;
 	int y = (int)index.y;
@@ -70,7 +29,7 @@ void SnakeMap::setGridType(cocos2d::Vec2 index, eType type)
 	m_iBlocks[x][y].m_eType = type;
 }
 
-eType SnakeMap::getGridType(cocos2d::Vec2 index)
+eType SnakeMapLayer::getGridType(cocos2d::Vec2 index)
 {
 	int x = (int)index.x;
 	int y = (int)index.y;
@@ -80,7 +39,7 @@ eType SnakeMap::getGridType(cocos2d::Vec2 index)
 	return m_iBlocks[x][y].m_eType;
 }
 
-void SnakeMap::addFood()
+void SnakeMapLayer::addFood()
 {
 	//check the empty block
 	Snake* snake = dynamic_cast<Snake*>(getParent()->getChildByTag(eID_Snake));
@@ -122,13 +81,13 @@ void SnakeMap::addFood()
 	setGridType(m_foodIndex, eType_Food);
 }
 
-Scene* MapLayer::createScene()
+Scene* SnakeMapLayer::createScene()
 {
     // 'scene' is an autorelease object
     auto scene = Scene::create();
     
     // 'layer' is an autorelease object
-    auto layer = MapLayer::create();
+    auto layer = SnakeMapLayer::create();
 
     // add layer as a child to scene
     scene->addChild(layer);
@@ -138,7 +97,7 @@ Scene* MapLayer::createScene()
 }
 
 // on "init" you need to initialize your instance
-bool MapLayer::init()
+bool SnakeMapLayer::init()
 {
     //////////////////////////////
     // 1. super init first
@@ -150,39 +109,57 @@ bool MapLayer::init()
 	srand((unsigned int)time(NULL));
 
 	m_pKeyboardListener = EventListenerKeyboard::create();
-	m_pKeyboardListener->onKeyReleased = CC_CALLBACK_2(MapLayer::onKeyReleased, this);
+	m_pKeyboardListener->onKeyReleased = CC_CALLBACK_2(SnakeMapLayer::onKeyReleased, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(m_pKeyboardListener, this);
-    
-    Size visibleSize = Director::getInstance()->getVisibleSize();
-    Vec2 origin = Director::getInstance()->getVisibleOrigin();
 
- 	m_pMap = SnakeMap::create();
-	this->addChild(m_pMap, 1, eID_SnakeMap);
+	//init blocks
+	for (int i = 0; i < MAPWIDTH; i++)
+	{
+		for (int j = 0; j < MAPHEIGHT; j++)
+			m_iBlocks[i][j].m_iPos = Point(i, j);
+	}
 
-	m_pBox = Sprite3D::create(SnakeBodyModel);
+
+#ifdef DEBUG_DRAW
+	auto drawLines = DrawNode::create();
+	this->addChild(drawLines, 1);
+	auto visualRect = VisibleRect::getVisibleRect();
+	auto length = visualRect.size.width / MAPWIDTH;
+	for (int i = 1; i < MAPWIDTH; i++)
+	{
+		drawLines->drawSegment(Vec2(i*length, 0) + visualRect.origin, Vec2(i*length, visualRect.size.height) + visualRect.origin, 1, Color4F(0.4f, 0.4f, 0.4f, 1));
+	}
+	for (int j = 1; j < MAPHEIGHT; j++)
+	{
+		drawLines->drawSegment(Vec2(0, j*length) + visualRect.origin, Vec2(visualRect.size.width, j*length) + visualRect.origin, 1, Color4F(0.4f, 0.4f, 0.4f, 1));
+	}
+#endif
+
+	m_pSnake = Snake::create(this);
+	this->addChild(m_pSnake, 2, eID_Snake);
+
+	//m_pBox = Sprite3D::create(SnakeBodyModel);
 	//m_pBox->setAnchorPoint(Vec2(0, 0));	//not work for 3D sprite
 	//m_pBox->setScale(3);
 	//m_pBox->setRotation3D(Vec3(60, 60, 0));
-	this->addChild(m_pBox,2);
-	m_pBox->setPosition(Vec2(visibleSize.width/2 + 16 +  (-5)*32 + origin.x, visibleSize.height/2 + 16 + (-5)*32+ origin.y));
-	m_iLastPt = m_pBox->getPosition(); 
+	//this->addChild(m_pBox,2);
+	//m_pBox->setPosition(Vec2(visibleSize.width/2 + 16 +  (-5)*32 + origin.x, visibleSize.height/2 + 16 + (-5)*32+ origin.y));
+	//m_iLastPt = m_pBox->getPosition(); 
 	//m_pBox->ignoreAnchorPointForPosition(true);
 	//m_pBox->setContentSize(Size(VisibleRect::getGridLength(), VisibleRect::getGridLength()));
 	//m_pBox->setAnchorPoint(Vec2(0.5,0.5));
-	log("%f, %f",m_pBox->getPositionX(),m_pBox->getPositionY());
+	//log("%f, %f",m_pBox->getPositionX(),m_pBox->getPositionY());
+// 	auto rotateAction = RotateBy::create(2.5, Vec3(0,0,90));
+// 	auto doneAction = CallFunc::create(CC_CALLBACK_0(SnakeMapLayer::getPos, this, m_pBox));
+// 	auto rotateAction2 = RotateBy::create(2.5, Vec3(0, 0, 90));
+// 	auto moveAction = MoveBy::create(2.5, Vec2(VisibleRect::getGridLength(),0));
+// 	auto moveAction2 = MoveTo::create(2.5, m_pBox->getPosition() + Vec2(32,0));
+// 	auto sequenceAction = Sequence::create(rotateAction, doneAction, NULL);
+// 	auto spawnAction = Spawn::create(rotateAction,moveAction,NULL);
+//	m_pBox->runAction(spawnAction);
+	scheduleUpdate();
 
-	auto rotateAction = RotateBy::create(2.5, Vec3(0,0,90));
-	auto doneAction = CallFunc::create(CC_CALLBACK_0(MapLayer::getPos, this, m_pBox));
-	auto rotateAction2 = RotateBy::create(2.5, Vec3(0, 0, 90));
-	auto moveAction = MoveBy::create(2.5, Vec2(VisibleRect::getGridLength(),0));
-	auto moveAction2 = MoveTo::create(2.5, m_pBox->getPosition() + Vec2(32,0));
-	auto sequenceAction = Sequence::create(rotateAction, doneAction, NULL);
-	auto spawnAction = Spawn::create(rotateAction,moveAction,NULL);
-	m_pBox->runAction(spawnAction);
-	//scheduleUpdate();
 
-	m_pSnake = Snake::create();
-	this->addChild(m_pSnake, 2, eID_Snake);
 
 // 	auto animation = Animation3D::create(fileName);
 // 	if (animation)
@@ -208,14 +185,14 @@ bool MapLayer::init()
     return true;
 }
 
-void MapLayer::getPos(cocos2d::Sprite3D* snake)
+void SnakeMapLayer::getPos(cocos2d::Sprite3D* snake)
 {
-	snake->setPosition(m_pBox->getPosition() + Vec2(0, 32));
-	snake->setAnchorPoint(Vec2(0, 0));
-	log("%f, %f", m_pBox->getPositionX(), m_pBox->getPositionY());
+	//snake->setPosition(m_pBox->getPosition() + Vec2(0, 32));
+	//snake->setAnchorPoint(Vec2(0, 0));
+	//log("%f, %f", m_pBox->getPositionX(), m_pBox->getPositionY());
 }
 
-void MapLayer::update(float dt)
+void SnakeMapLayer::update(float dt)
 {
 	if (m_pBox)
 	{
@@ -244,7 +221,7 @@ void MapLayer::update(float dt)
 	
 }
 
-void MapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
+void SnakeMapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
 {
 	switch (keycode)
 	{
@@ -281,7 +258,7 @@ void MapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
 		break;
 	case EventKeyboard::KeyCode::KEY_F1:
 	{
-										   Director::getInstance()->replaceScene(MapLayer::createScene());
+										   Director::getInstance()->replaceScene(SnakeMapLayer::createScene());
 	}
 		break;
 	case EventKeyboard::KeyCode::KEY_F2:
