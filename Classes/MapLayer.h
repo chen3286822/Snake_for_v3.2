@@ -23,6 +23,9 @@ public:
 
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
     virtual bool init();  
+
+	//override draw for debugging
+	virtual void draw(cocos2d::Renderer* renderer, const cocos2d::Mat4 &transform, uint32_t flags) override;
     
     // implement the "static create()" method manually
     CREATE_FUNC(SnakeMapLayer);
@@ -43,6 +46,12 @@ public:
 	eType getGridType(cocos2d::Vec2 index);
 
 	void setOccupy(cocos2d::Vec2 index);
+
+protected:
+	//for debugging
+	void onDraw(const cocos2d::Mat4& transform, uint32_t flags);
+	cocos2d::CustomCommand m_customCommand;
+
 private:
 	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
 	cocos2d::Vec2 m_foodIndex;

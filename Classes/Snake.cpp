@@ -96,19 +96,13 @@ bool Snake::initWithMap(SnakeMapLayer* snakeMap)
 	//init snake speed
 	m_fMoveSpeed = 32.0f;
 
-	return true;
-}
-
-void Snake::onEnter()
-{
-	Node::onEnter();
-
 	//set map block type
 	for (auto bodyRect : m_lpBody)
 	{
 		auto index = bodyRect->getMapIndex();
 		m_pSnakeMap->setGridType(index, eType_Snake);
 	}
+	return true;
 }
 
 void Snake::pauseAll()
@@ -148,92 +142,79 @@ int Snake::getLength()
 
 void Snake::setMoveAction(BodyRect* bodyRect)
 {
-	auto moveDistance = [=](eDirection dir, Vec2& indexOffset) -> Vec2
+	auto moveDistance = [=](eDirection dir) -> Vec2
 	{
 		if (dir == eDir_Up)
-		{
-			indexOffset = Vec2(0, 1);
 			return Vec2(0, VisibleRect::getGridLength());
-		}
 		else if (dir == eDir_Down)
-		{
-			indexOffset = Vec2(0, -1);
 			return Vec2(0, -VisibleRect::getGridLength());
-		}
 		else if (dir == eDir_Left)
-		{
-			indexOffset = Vec2(-1, 0);
 			return Vec2(-VisibleRect::getGridLength(), 0);
-		}
 		else if (dir == eDir_Right)
-		{
-			indexOffset = Vec2(1, 0);
 			return Vec2(VisibleRect::getGridLength(), 0);
-		}
-		indexOffset = Vec2(0, 0);
 		return Vec2(0, 0);
 	};
 
-	auto moveOffset = Vec2();
-	auto moveAction = MoveBy::create(VisibleRect::getGridLength()/m_fMoveSpeed, moveDistance(bodyRect->getCurDirection(), moveOffset));
-	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect, bodyRect->getMapIndex() + moveOffset));
+	auto moveAction = MoveBy::create(VisibleRect::getGridLength()/m_fMoveSpeed, moveDistance(bodyRect->getCurDirection()));
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
 	auto sequenceAction = Sequence::create(moveAction, doneAction, NULL);
 	bodyRect->runAction(sequenceAction);
 	bodyRect->setMoving(true);
 }
 
-void Snake::setRotateAction(BodyRect* bodyRect, eDirection previousDir)
+void Snake::setRotateAction(BodyRect* bodyRect)
 {
-	auto rotateArc = [=](BodyRect* first, eDirection previousDir, Vec2& indexOffset) -> Vec3
+	auto rotateArc = [=](BodyRect* body,Vec2& indexOffset) -> Vec3
 	{
-		auto fDir = first->getCurDirection();
-		if (fDir == eDir_Up)
+		auto currentDir = body->getCurDirection();
+		auto lastDir = body->getLastDirection();
+		if (currentDir == eDir_Up)
 		{
-			if (previousDir == eDir_Left)
+			if (lastDir == eDir_Left)
 			{
 				indexOffset = Vec2(0, 1);
 				return Vec3(0, 0, 90);
 			}
-			else if (previousDir == eDir_Right)
+			else if (lastDir == eDir_Right)
 			{
 				indexOffset = Vec2(0, 1);
 				return Vec3(0, 0, -90);
 			}
 		}
-		else if (fDir == eDir_Down)
+		else if (currentDir == eDir_Down)
 		{
-			if (previousDir == eDir_Left)
+			if (lastDir == eDir_Left)
 			{
 				indexOffset = Vec2(0, -1);
 				return Vec3(0, 0, -90);
 			}
-			else if (previousDir == eDir_Right)
+			else if (lastDir == eDir_Right)
 			{
 				indexOffset = Vec2(0, -1);
 				return Vec3(0, 0, 90);
 			}
 		}
-		else if (fDir == eDir_Left)
+		else if (currentDir == eDir_Left)
 		{
-			if (previousDir == eDir_Up)
+			if (lastDir == eDir_Up)
 			{
 				indexOffset = Vec2(-1, 0);
 				return Vec3(0, 0, -90);
 			}
-			else if (previousDir == eDir_Down)
+			else if (lastDir == eDir_Down)
 			{
 				indexOffset = Vec2(-1, 0);
 				return Vec3(0, 0, 90);
 			}
 		}
-		else if (fDir == eDir_Right)
+		else if (currentDir == eDir_Right)
 		{
-			if (previousDir == eDir_Up)
+			if (lastDir == eDir_Up)
 			{
 				indexOffset = Vec2(1, 0);
 				return Vec3(0, 0, 90);
 			}
-			else if (previousDir == eDir_Down)
+			else if (lastDir == eDir_Down)
 			{
 				indexOffset = Vec2(1, 0);
 				return Vec3(0, 0, -90);
@@ -242,13 +223,12 @@ void Snake::setRotateAction(BodyRect* bodyRect, eDirection previousDir)
 
 		return Vec3();
 	};
-
 	auto moveOffset = Vec2();
-	auto arc = rotateArc(bodyRect, previousDir, moveOffset);
+	auto arc = rotateArc(bodyRect, moveOffset);
 	auto rotateAction = RotateBy::create(VisibleRect::getGridLength() / m_fMoveSpeed, arc);
 	auto moveAction = MoveBy::create(VisibleRect::getGridLength() / m_fMoveSpeed, moveOffset*VisibleRect::getGridLength());
 	auto spawnAction = Spawn::create(rotateAction, moveAction, NULL);
-	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect, bodyRect->getMapIndex() + moveOffset));
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
 	auto sequenceAction = Sequence::create(spawnAction, doneAction, NULL);
 	bodyRect->runAction(sequenceAction);
 	bodyRect->setMoving(true);
@@ -280,20 +260,10 @@ void Snake::crawl()
 		m_pSnakeMap->setDestinationOfBodyRect(bodyRect);
 
 		//set move action
-		switch (bodyRect->getMoveType())
-		{
-		case eMoveType_None:
-			break;
-		}
+		setAction(bodyRect);
 
 		//if destination grid contains something special, it effects here
-		switch (m_pSnakeMap->getGridType(bodyRect->getDestinationIndex()))
-		{
-		case eType_Food:
-			break;
-		default:
-			break;
-		}
+		effectDestination(bodyRect);
 
 		//set the current grid and destination grid's grid type except the snake is dead
 		m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
@@ -335,7 +305,33 @@ void Snake::crawl()
 	*/
 }
 
-void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
+void Snake::setAction(BodyRect* bodyRect)
+{
+	switch (bodyRect->getMoveType())
+	{
+	case eMoveType_None:
+	{
+						   if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
+							   setMoveAction(bodyRect);
+						   else
+							   setRotateAction(bodyRect);
+	}
+		break;
+	}
+}
+
+void Snake::effectDestination(BodyRect* bodyRect)
+{
+	switch (m_pSnakeMap->getGridType(bodyRect->getDestinationIndex()))
+	{
+	case eType_Food:
+		break;
+	default:
+		break;
+	}
+}
+
+void Snake::setNextDirection(BodyRect* bodyRect)
 {
 	if (bodyRect)
 	{
@@ -344,9 +340,9 @@ void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
 
 		bodyRect->setMoving(false);
 		//reset the map index
-		bodyRect->setMapIndex(newMapIndex);
+		bodyRect->setMapIndex(bodyRect->getDestinationIndex());
 		//reset the position
-		bodyRect->setPosition(newMapIndex*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec());
+		bodyRect->setPosition(bodyRect->getMapIndex()*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec());
 	}
 
 	for (auto body : m_lpBody)
@@ -355,32 +351,6 @@ void Snake::setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex)
 			return;
 	}
 
-	//reset map block type
-	m_pSnakeMap->setGridType(m_pHead->getMapIndex(), eType_Snake);
-	m_pSnakeMap->setGridType(m_tailLastMapIndex, eType_Empty);
-
-	//save the last direction
-	std::list<BodyRect*>::reverse_iterator previous = m_lpBody.rbegin();
-	if (previous != m_lpBody.rend())
-		m_eLastDir = (*previous)->getCurDirection();
-
-	//set every body rect's direction with the previous one's
-	for (auto it = m_lpBody.rbegin(); it != m_lpBody.rend();++it)
-	{
-		previous++;
-		if (previous != m_lpBody.rend())
-		{
-			(*it)->setCurDirection((*previous)->getCurDirection());
-		}
-	}
-
-	//the head rect remains the same if m_eNextDirection not set
-	if (m_eNextDirection != eDir_None)
-	{
-		m_pHead->setCurDirection(m_eNextDirection);
-	}
-
-	//detect next grid
 	//call the crawl again
 	crawl();
 }

@@ -116,9 +116,123 @@ bool SnakeMapLayer::init()
     return true;
 }
 
+void SnakeMapLayer::draw(Renderer* renderer, const Mat4 &transform, uint32_t flags)
+{
+	m_customCommand.init(1);
+	m_customCommand.func = CC_CALLBACK_0(SnakeMapLayer::onDraw, this, transform, flags);
+	renderer->addCommand(&m_customCommand);
+}
+
+void SnakeMapLayer::onDraw(const Mat4& transform, uint32_t flags)
+{
+	Director* director = Director::getInstance();
+	director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+	director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
+
+#ifdef DEBUG_DRAW
+	glLineWidth(1);
+	
+	for (int i = 0; i < MAPWIDTH; ++i)
+	{
+		for (int j = 0; j < MAPHEIGHT; ++j)
+		{
+			auto color = Color4F::BLACK;
+			auto type = getGridType(Vec2(i, j));
+			if (type == eType_Snake)
+				color = Color4F(0.5f, 0.5f, 1, 0.8f);
+			else if (type == eType_Food)
+				color = Color4F(1, 0, 0, 0.8f);
+
+			if (color != Color4F::BLACK)
+			{
+				auto x = VisibleRect::getGridLength() * i + VisibleRect::getVisibleRect().origin.x;
+				auto y = VisibleRect::getGridLength() * j + VisibleRect::getVisibleRect().origin.y;
+				auto x1 = x + VisibleRect::getGridLength();
+				auto y1 = y + VisibleRect::getGridLength();
+				Vec2 filledVertices[] = { Vec2(x,y), Vec2(x1, y), Vec2(x1, y1), Vec2(x, y1) };
+				DrawPrimitives::drawSolidPoly(filledVertices, 4, color);
+
+				CHECK_GL_ERROR_DEBUG();
+			}
+		}
+	}
+#endif
+
+	//end draw
+	director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+}
+
 void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 {
+	if (!bodyRect)
+		return;
 
+	auto mapOffset = [=](eDirection dir) -> Vec2
+	{
+		if (dir == eDir_Up)
+			return Vec2(0, 1);
+		else if (dir == eDir_Down)
+			return Vec2(0, -1);
+		else if (dir == eDir_Left)
+			return Vec2(-1, 0);
+		else if (dir == eDir_Right)
+			return Vec2(1, 0);
+		return Vec2(0, 0);
+	};
+	auto curIndex = bodyRect->getMapIndex();
+	//expected destination index
+	auto tempIndex = curIndex + mapOffset(bodyRect->getCurDirection());
+	//real index
+	auto realIndex = tempIndex;
+	//move type
+	auto moveType = bodyRect->getMoveType();
+
+	//check if the 'destination' is valid
+	if (tempIndex.x < 0 || tempIndex.x >= MAPWIDTH || tempIndex.y < 0 || tempIndex.y >= MAPHEIGHT)
+	{
+		//the snake is crossing over the border, get the real destination
+		if (tempIndex.x < 0)
+			realIndex.x = MAPWIDTH - 1;
+		else if (tempIndex.x >= MAPWIDTH)
+			realIndex.x = 0;
+		if (tempIndex.y < 0)
+			realIndex.y = MAPHEIGHT - 1;
+		else if (realIndex.y >= MAPHEIGHT)
+			realIndex.y = 0;
+
+		moveType = eMoveType_CrossBorder;
+	}
+	
+	//get the destination grid type
+	auto type = getGridType(realIndex);
+	switch (type)
+	{
+	case eType_Door:
+	{
+					   //check if the direction is right to the door
+					   moveType = eMoveType_Transfer;
+	}
+		break;
+	case eType_Food:
+	{
+					   moveType = eMoveType_Eat;
+	}
+		break;
+	case eType_Blocked:
+	case eType_Snake:
+	case eType_Dead:
+	{
+					   moveType = eMoveType_Dead;
+	}
+		break;
+	default:
+		moveType = eMoveType_None;
+		break;
+	}
+
+	//set the values
+	bodyRect->setDestinationIndex(realIndex);
+	bodyRect->setMoveType(moveType);
 }
 
 void SnakeMapLayer::update(float dt)

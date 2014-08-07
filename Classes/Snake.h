@@ -40,7 +40,6 @@ class Snake : public cocos2d::Node
 public:
 	static Snake* create(SnakeMapLayer* snakeMap);
 	virtual bool initWithMap(SnakeMapLayer* snakeMap);
-	virtual void onEnter();
 
 	//pause all its body rects' actions and its own
 	void pauseAll();
@@ -77,10 +76,16 @@ private:
 	cocos2d::Vec2 m_tailLastMapIndex;
 
 	//according to the m_eNextDirection value is set or not, decide next direction
-	void setNextDirection(BodyRect* bodyRect, cocos2d::Vec2 newMapIndex);
+	void setNextDirection(BodyRect* bodyRect);
 
 	void setMoveAction(BodyRect* bodyRect);
-	void setRotateAction(BodyRect* bodyRect, eDirection previousDir = eDir_None);
+	void setRotateAction(BodyRect* bodyRect);
+
+	//set move action by eMoveType
+	void setAction(BodyRect* bodyRect);
+
+	//make the destination items effect, like play effect, make the snake speed up
+	void effectDestination(BodyRect* bodyRect);
 };
 
 #endif
