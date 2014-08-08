@@ -39,7 +39,7 @@ class Snake : public cocos2d::Node
 {
 public:
 	static Snake* create(SnakeMapLayer* snakeMap);
-	virtual bool initWithMap(SnakeMapLayer* snakeMap);
+	bool initWithMap(SnakeMapLayer* snakeMap);
 
 	//pause all its body rects' actions and its own
 	void pauseAll();
@@ -64,6 +64,11 @@ private:
 	BodyRect* m_pHead{ nullptr };
 	BodyRect* m_pTail{ nullptr };
 	std::list<BodyRect*> m_lpBody;
+
+	//save a new body rect to be added to the list
+	BodyRect* m_pToAdd{ nullptr };
+
+	//control the speed of snake
 	float m_fMoveSpeed;
 
 	//save previous step the tail's direction
@@ -78,11 +83,12 @@ private:
 	//according to the m_eNextDirection value is set or not, decide next direction
 	void setNextDirection(BodyRect* bodyRect);
 
-	void setMoveAction(BodyRect* bodyRect);
+	void setWalkAction(BodyRect* bodyRect);
 	void setRotateAction(BodyRect* bodyRect);
+	void setAppearAction(BodyRect* bodyRect);
 
-	//set move action by eMoveType
-	void setAction(BodyRect* bodyRect);
+	//set move action by eMoveType, if return false, rest rects' actions will be stopped
+	bool setAction(BodyRect* bodyRect);
 
 	//make the destination items effect, like play effect, make the snake speed up
 	void effectDestination(BodyRect* bodyRect);

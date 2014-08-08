@@ -10,11 +10,11 @@
     <Filter Include="resource">
       <UniqueIdentifier>{715254bc-d70b-4ec5-bf29-467dd3ace079}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Classes\Layer">
-      <UniqueIdentifier>{78981b12-0b33-4642-8171-3458709271b7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Classes\Help">
       <UniqueIdentifier>{a1b6cf82-ebdf-445b-bd2e-1a5d8b0ca914}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Classes\Element">
+      <UniqueIdentifier>{78981b12-0b33-4642-8171-3458709271b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -25,13 +25,16 @@
       <Filter>Classes</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\MapLayer.cpp">
-      <Filter>Classes\Layer</Filter>
+      <Filter>Classes\Element</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\VisibleRect.cpp">
       <Filter>Classes\Help</Filter>
     </ClCompile>
     <ClCompile Include="..\Classes\Snake.cpp">
-      <Filter>Classes\Layer</Filter>
+      <Filter>Classes\Element</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\Item.cpp">
+      <Filter>Classes\Element</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -42,16 +45,19 @@
       <Filter>Classes</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\MapLayer.h">
-      <Filter>Classes\Layer</Filter>
+      <Filter>Classes\Element</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\VisibleRect.h">
       <Filter>Classes\Help</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\Snake.h">
-      <Filter>Classes\Layer</Filter>
+      <Filter>Classes\Element</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\GameDefine.h">
       <Filter>Classes\Help</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Item.h">
+      <Filter>Classes\Element</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

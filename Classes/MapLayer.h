@@ -15,6 +15,7 @@ struct Block
 
 class BodyRect;
 class Snake;
+class ItemFactory;
 class SnakeMapLayer : public cocos2d::Layer
 {
 public:
@@ -22,7 +23,7 @@ public:
     static cocos2d::Scene* createScene();
 
     // Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
-    virtual bool init();  
+    virtual bool init() override;  
 
 	//override draw for debugging
 	virtual void draw(cocos2d::Renderer* renderer, const cocos2d::Mat4 &transform, uint32_t flags) override;
@@ -34,8 +35,11 @@ public:
 	virtual void update(float dt) override;
 	void onKeyReleased(cocos2d::EventKeyboard::KeyCode keycode, cocos2d::Event* event);
 
-	//get all the movable blocks' sum, some map may contains some immovable blocks and should be excluded
+	//get all the movable grids' sum, some map may contains some immovable blocks and should be excluded
 	int getMovableNumbers();
+
+	//get the empty grid index for produce item
+	cocos2d::Vec2 getEmptyGridIndex(int index);
 	
 	//set snake body rect's destination and move type
 	//just pass the ptr value to the map, so the snake doesn't need to check the map
@@ -54,17 +58,11 @@ protected:
 
 private:
 	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
-	cocos2d::Vec2 m_foodIndex;
 
 	Snake* m_pSnake{ nullptr };
-	cocos2d::Sprite3D* m_pBox{nullptr};
-	cocos2d::Vec2 m_iLastPt;
-	float m_fLastTime{ 0.0f };
+	ItemFactory* m_pItemFactory{ nullptr };
+
 	cocos2d::EventListenerKeyboard* m_pKeyboardListener{ nullptr };
-
-
-
-	void addFood();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

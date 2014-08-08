@@ -140,7 +140,7 @@ int Snake::getLength()
 	return m_lpBody.size();
 }
 
-void Snake::setMoveAction(BodyRect* bodyRect)
+void Snake::setWalkAction(BodyRect* bodyRect)
 {
 	auto moveDistance = [=](eDirection dir) -> Vec2
 	{
@@ -234,6 +234,16 @@ void Snake::setRotateAction(BodyRect* bodyRect)
 	bodyRect->setMoving(true);
 }
 
+void Snake::setAppearAction(BodyRect* bodyRect)
+{
+	bodyRect->setScale(0.1f);
+	auto scaleAction = ScaleTo::create(VisibleRect::getGridLength() / m_fMoveSpeed, 1);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
+	auto sequenceAction = Sequence::create(scaleAction, doneAction, NULL);
+	bodyRect->runAction(sequenceAction);
+	bodyRect->setMoving(true);
+}
+
 void Snake::crawl()
 {
 	//set body rects' current direction and last direction
@@ -260,64 +270,67 @@ void Snake::crawl()
 		m_pSnakeMap->setDestinationOfBodyRect(bodyRect);
 
 		//set move action
-		setAction(bodyRect);
+		auto bContinue = setAction(bodyRect);
 
 		//if destination grid contains something special, it effects here
 		effectDestination(bodyRect);
 
-		//set the current grid and destination grid's grid type except the snake is dead
-		m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
-		m_pSnakeMap->setGridType(bodyRect->getMapIndex(), eType_Empty);
+		if (!bContinue)
+			break;
 	}
 
-	/*
-	std::list<BodyRect*>::iterator next = m_lpBody.begin();
-	for (auto it = m_lpBody.begin(); it != m_lpBody.end(); ++it)
+	if (m_pToAdd)
 	{
-		//compare with the next direction to decide the next action
-		next++;
-		if (next != m_lpBody.end())
-		{
-			//they are the same, so body rect just move across the original direction
-			if ((*next)->getCurDirection() == (*it)->getCurDirection())
-			{
-				setMoveAction(*it);
-			}
-			//the body rect will turn over
-			else
-			{
-				setRotateAction(*it, (*next)->getCurDirection());
-			}
-		}
-		//the tail should compare with the m_eLastDir
-		else
-		{
-			if (m_eLastDir == (*it)->getCurDirection())
-			{
-				setMoveAction(*it);
-			}
-			else
-			{
-				setRotateAction(*it, m_eLastDir);
-			}
-		}
+		//insert the rect to the list behind the head
+		auto headPos = m_lpBody.begin();
+		++headPos;
+		m_lpBody.insert(headPos, m_pToAdd);
+
+		m_pToAdd = nullptr;
 	}
-	*/
 }
 
-void Snake::setAction(BodyRect* bodyRect)
+bool Snake::setAction(BodyRect* bodyRect)
 {
 	switch (bodyRect->getMoveType())
 	{
 	case eMoveType_None:
 	{
 						   if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
-							   setMoveAction(bodyRect);
+							   setWalkAction(bodyRect);
 						   else
 							   setRotateAction(bodyRect);
 	}
 		break;
+	case eMoveType_Eat:
+	{
+						  //only the head rect will run here
+						  //a new rect will be 'born' in the head's position
+						  m_pToAdd = BodyRect::create(SnakeBodyModel);
+						  this->addChild(m_pToAdd, 1);
+						  m_pToAdd->setPosition(bodyRect->getPosition());
+						  m_pToAdd->setMapIndex(bodyRect->getMapIndex());
+						  m_pToAdd->setCurDirection(bodyRect->getCurDirection());
+						  setAppearAction(m_pToAdd);
+
+						  //then the head will move to the destination.
+						  if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
+							  setWalkAction(bodyRect);
+						  else
+							  setRotateAction(bodyRect);
+						  
+						  //just set the destination index to eType_Snake
+						  m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
+						  return false;
 	}
+		break;
+	}
+
+	//set the current grid and destination grid's grid type except the snake is dead
+	m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
+	m_pSnakeMap->setGridType(bodyRect->getMapIndex(), eType_Empty);
+
+	return true;
 }
 
 void Snake::effectDestination(BodyRect* bodyRect)

@@ -15,6 +15,7 @@ enum eID
 	eID_SnakeMap,
 	eID_Snake,
 	eID_Food,
+	eID_ItemFactory,
 };
 
 //the grid type

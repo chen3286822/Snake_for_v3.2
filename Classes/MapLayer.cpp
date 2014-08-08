@@ -1,6 +1,7 @@
 #include "MapLayer.h"
 #include "VisibleRect.h"
 #include "Snake.h"
+#include "Item.h"
 USING_NS_CC;
 
 Scene* SnakeMapLayer::createScene()
@@ -62,13 +63,19 @@ bool SnakeMapLayer::init()
 	}
 #endif
 
-	//create the snake and crawl
+	//create the snake
 	m_pSnake = Snake::create(this);
 	this->addChild(m_pSnake, 2, eID_Snake);
-	m_pSnake->crawl();
+	
+	//create the items factory
+	m_pItemFactory = ItemFactory::create(this);
+	this->addChild(m_pItemFactory, 2, eID_ItemFactory);
 
 	//schedule the udpate function to maintain the food and other items' production
 	scheduleUpdate();
+
+	//the snake crawl
+	m_pSnake->crawl();
 
 	//m_pBox = Sprite3D::create(SnakeBodyModel);
 	//m_pBox->setAnchorPoint(Vec2(0, 0));	//not work for 3D sprite
@@ -237,6 +244,8 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 
 void SnakeMapLayer::update(float dt)
 {
+	if (m_pItemFactory)
+		m_pItemFactory->produce();
 // 	if (m_pBox)
 // 	{
 // 		auto pos = m_pBox->getPosition();
@@ -343,6 +352,13 @@ void SnakeMapLayer::setGridType(cocos2d::Vec2 index, eType type)
 		return;
 
 	m_iBlocks[x][y].m_eType = type;
+	if (type != eType_None)
+	{
+		if (type == eType_Empty)
+			m_iBlocks[x][y].m_bOccupied = false;
+		else
+			m_iBlocks[x][y].m_bOccupied = true;
+	}
 }
 
 eType SnakeMapLayer::getGridType(cocos2d::Vec2 index)
@@ -355,20 +371,9 @@ eType SnakeMapLayer::getGridType(cocos2d::Vec2 index)
 	return m_iBlocks[x][y].m_eType;
 }
 
-void SnakeMapLayer::addFood()
+Vec2 SnakeMapLayer::getEmptyGridIndex(int index)
 {
-	//check the empty block
-	Snake* snake = dynamic_cast<Snake*>(getParent()->getChildByTag(eID_Snake));
-	if (!snake)
-		return;
-	int left = getMovableNumbers() - snake->getLength();
-
-	//no empty blocks left, you win
-	if (left <= 0)
-		return;
-
-	//set the food index
-	int index = (int)(rand() % left + 1);
+	auto emptyIndex = Vec2(-1, -1);
 	int count = 0;
 	for (int i = 0; i < MAPWIDTH*MAPHEIGHT; i++)
 	{
@@ -377,22 +382,10 @@ void SnakeMapLayer::addFood()
 			count++;
 			if (count == index)
 			{
-				m_foodIndex = Vec2(i % MAPWIDTH, i / MAPWIDTH);
-				m_iBlocks[i % MAPWIDTH][i / MAPWIDTH].m_bOccupied = true;
+				emptyIndex = Vec2(i % MAPWIDTH, i / MAPWIDTH);
 				break;
 			}
 		}
 	}
-
-	//create food model
-	Sprite3D* food = dynamic_cast<Sprite3D*>(this->getChildByTag(eID_Food));
-	if (food == NULL)
-	{
-		food = Sprite3D::create(FoodModel);
-		this->addChild(food, 1, eID_Food);
-	}
-	food->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*m_foodIndex);
-
-	//set the block type
-	setGridType(m_foodIndex, eType_Food);
+	return emptyIndex;
 }
