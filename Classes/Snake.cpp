@@ -1,6 +1,7 @@
 #include "Snake.h"
 #include "VisibleRect.h"
 #include "MapLayer.h"
+#include "Item.h"
 
 USING_NS_CC;
 
@@ -275,6 +276,9 @@ void Snake::crawl()
 		//if destination grid contains something special, it effects here
 		effectDestination(bodyRect);
 
+		//reset the snake map grid type
+		resetGridType(bodyRect);
+
 		if (!bContinue)
 			break;
 	}
@@ -296,40 +300,32 @@ bool Snake::setAction(BodyRect* bodyRect)
 	{
 	case eMoveType_None:
 	{
-						   if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
-							   setWalkAction(bodyRect);
-						   else
-							   setRotateAction(bodyRect);
+		if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
+			setWalkAction(bodyRect);
+		else
+			setRotateAction(bodyRect);
 	}
 		break;
 	case eMoveType_Eat:
 	{
-						  //only the head rect will run here
-						  //a new rect will be 'born' in the head's position
-						  m_pToAdd = BodyRect::create(SnakeBodyModel);
-						  this->addChild(m_pToAdd, 1);
-						  m_pToAdd->setPosition(bodyRect->getPosition());
-						  m_pToAdd->setMapIndex(bodyRect->getMapIndex());
-						  m_pToAdd->setCurDirection(bodyRect->getCurDirection());
-						  setAppearAction(m_pToAdd);
+		//only the head rect will run here
+		//a new rect will be 'born' in the head's position
+		m_pToAdd = BodyRect::create(SnakeBodyModel);
+		this->addChild(m_pToAdd, 1);
+		m_pToAdd->setPosition(bodyRect->getPosition());
+		m_pToAdd->setMapIndex(bodyRect->getMapIndex());
+		m_pToAdd->setDestinationIndex(bodyRect->getMapIndex());
+		m_pToAdd->setCurDirection(bodyRect->getCurDirection());
+		setAppearAction(m_pToAdd);
 
-						  //then the head will move to the destination.
-						  if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
-							  setWalkAction(bodyRect);
-						  else
-							  setRotateAction(bodyRect);
-						  
-						  //just set the destination index to eType_Snake
-						  m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
-						  return false;
+		//then the head will move to the destination.
+		if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
+			setWalkAction(bodyRect);
+		else
+			setRotateAction(bodyRect);
 	}
-		break;
+		return false;
 	}
-
-	//set the current grid and destination grid's grid type except the snake is dead
-	m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
-	m_pSnakeMap->setGridType(bodyRect->getMapIndex(), eType_Empty);
-
 	return true;
 }
 
@@ -338,9 +334,33 @@ void Snake::effectDestination(BodyRect* bodyRect)
 	switch (m_pSnakeMap->getGridType(bodyRect->getDestinationIndex()))
 	{
 	case eType_Food:
+	{
+		//eat the food
+		auto itemFactory = dynamic_cast<ItemFactory*>(m_pSnakeMap->getChildByTag(eID_ItemFactory));
+		if (itemFactory)
+		{
+			itemFactory->eatFood();
+		}
+	}
 		break;
 	default:
 		break;
+	}
+}
+
+void Snake::resetGridType(BodyRect* bodyRect)
+{
+	auto moveType = bodyRect->getMoveType();
+	if (moveType == eMoveType_Eat)
+	{
+		//just set the destination index to eType_Snake
+		m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
+	}
+	else
+	{
+		//set the current grid and destination grid's grid type except the snake is dead
+		m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
+		m_pSnakeMap->setGridType(bodyRect->getMapIndex(), eType_Empty);
 	}
 }
 
@@ -348,9 +368,6 @@ void Snake::setNextDirection(BodyRect* bodyRect)
 {
 	if (bodyRect)
 	{
-		if (bodyRect == m_pTail)
-			m_tailLastMapIndex = bodyRect->getMapIndex();
-
 		bodyRect->setMoving(false);
 		//reset the map index
 		bodyRect->setMapIndex(bodyRect->getDestinationIndex());

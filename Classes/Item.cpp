@@ -86,3 +86,10 @@ void ItemFactory::addFood()
 	//set the block type
 	m_pSnakeMap->setGridType(mapIndex, eType_Food);
 }
+
+void ItemFactory::eatFood()
+{
+	//here we do not need to reset the map grid type, because it will be set later in Snake::resetGridType
+	this->removeChildByTag(eID_Food);
+	m_pFood = nullptr;
+}

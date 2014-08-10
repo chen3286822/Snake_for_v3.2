@@ -77,9 +77,6 @@ private:
 	//next direction set by player
 	eDirection m_eNextDirection{ eDir_None };	
 
-	//save tail's map index of last move
-	cocos2d::Vec2 m_tailLastMapIndex;
-
 	//according to the m_eNextDirection value is set or not, decide next direction
 	void setNextDirection(BodyRect* bodyRect);
 
@@ -92,6 +89,9 @@ private:
 
 	//make the destination items effect, like play effect, make the snake speed up
 	void effectDestination(BodyRect* bodyRect);
+
+	//reset the map grid type
+	void resetGridType(BodyRect* bodyRect);
 };
 
 #endif

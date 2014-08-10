@@ -38,6 +38,8 @@ public:
 	// produce items, it it called every frame
 	void produce();
 
+	//delete the food
+	void eatFood();
 private:
 	SnakeMapLayer* m_pSnakeMap{ nullptr };
 

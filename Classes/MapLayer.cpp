@@ -192,8 +192,8 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 	//real index
 	auto realIndex = tempIndex;
 	//move type
-	auto moveType = bodyRect->getMoveType();
-
+	auto moveType = eMoveType_None;
+	 
 	//check if the 'destination' is valid
 	if (tempIndex.x < 0 || tempIndex.x >= MAPWIDTH || tempIndex.y < 0 || tempIndex.y >= MAPHEIGHT)
 	{
@@ -231,9 +231,6 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 	{
 					   moveType = eMoveType_Dead;
 	}
-		break;
-	default:
-		moveType = eMoveType_None;
 		break;
 	}
 
