@@ -137,32 +137,32 @@ void SnakeMapLayer::onDraw(const Mat4& transform, uint32_t flags)
 	director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
 
 #ifdef DEBUG_DRAW
-	glLineWidth(1);
-	
-	for (int i = 0; i < MAPWIDTH; ++i)
-	{
-		for (int j = 0; j < MAPHEIGHT; ++j)
-		{
-			auto color = Color4F::BLACK;
-			auto type = getGridType(Vec2(i, j));
-			if (type == eType_Snake)
-				color = Color4F(0.5f, 0.5f, 1, 0.8f);
-			else if (type == eType_Food)
-				color = Color4F(1, 0, 0, 0.8f);
-
-			if (color != Color4F::BLACK)
-			{
-				auto x = VisibleRect::getGridLength() * i + VisibleRect::getVisibleRect().origin.x;
-				auto y = VisibleRect::getGridLength() * j + VisibleRect::getVisibleRect().origin.y;
-				auto x1 = x + VisibleRect::getGridLength();
-				auto y1 = y + VisibleRect::getGridLength();
-				Vec2 filledVertices[] = { Vec2(x,y), Vec2(x1, y), Vec2(x1, y1), Vec2(x, y1) };
-				DrawPrimitives::drawSolidPoly(filledVertices, 4, color);
-
-				CHECK_GL_ERROR_DEBUG();
-			}
-		}
-	}
+// 	glLineWidth(1);
+// 	
+// 	for (int i = 0; i < MAPWIDTH; ++i)
+// 	{
+// 		for (int j = 0; j < MAPHEIGHT; ++j)
+// 		{
+// 			auto color = Color4F::BLACK;
+// 			auto type = getGridType(Vec2(i, j));
+// 			if (type == eType_Snake)
+// 				color = Color4F(0.5f, 0.5f, 1, 0.8f);
+// 			else if (type == eType_Food)
+// 				color = Color4F(1, 0, 0, 0.8f);
+// 
+// 			if (color != Color4F::BLACK)
+// 			{
+// 				auto x = VisibleRect::getGridLength() * i + VisibleRect::getVisibleRect().origin.x;
+// 				auto y = VisibleRect::getGridLength() * j + VisibleRect::getVisibleRect().origin.y;
+// 				auto x1 = x + VisibleRect::getGridLength();
+// 				auto y1 = y + VisibleRect::getGridLength();
+// 				Vec2 filledVertices[] = { Vec2(x,y), Vec2(x1, y), Vec2(x1, y1), Vec2(x, y1) };
+// 				DrawPrimitives::drawSolidPoly(filledVertices, 4, color);
+// 
+// 				CHECK_GL_ERROR_DEBUG();
+// 			}
+// 		}
+// 	}
 #endif
 
 	//end draw
@@ -211,12 +211,12 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 		if (tempIndex.y < 0)
 		{
 			realIndex.y = MAPHEIGHT - 1;
-			bodyRect->setTransferDirection(eDir_Up);
+			bodyRect->setTransferDirection(eDir_Down);
 		}
 		else if (realIndex.y >= MAPHEIGHT)
 		{
 			realIndex.y = 0;
-			bodyRect->setTransferDirection(eDir_Down);
+			bodyRect->setTransferDirection(eDir_Up);
 		}
 
 		bodyRect->setCrossing(true);

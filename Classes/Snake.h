@@ -38,9 +38,13 @@ public:
 	void setMapIndex(cocos2d::Vec2 index);
 	cocos2d::Vec2 getMapIndex(){ return m_mapIndex; }
 
+	//set the rect's position, just for the action call, avoid the std::bind's compile error: cannot bind overload function
+	void setRectPosition(cocos2d::Vec2 position);
+
 	//some helpful function
 	static cocos2d::Vec2 moveDistance(eDirection dir);
 	static cocos2d::Vec3 rotateArc(eDirection curDir, eDirection lastDir);
+	static eDirection oppsiteDirection(eDirection dir);
 private:
 	cocos2d::Sprite3D* m_pModel{ nullptr };
 	cocos2d::Vec2 m_mapIndex;
@@ -95,10 +99,11 @@ private:
 	void setWalkAction(BodyRect* bodyRect);
 	void setRotateAction(BodyRect* bodyRect);
 	void setAppearAction(BodyRect* bodyRect);
-	void setFlipWalkAction(BodyRect* bodyRect);
-	void setFlipRotateAction(BodyRect* bodyRect);
+	//sprite 3D do not support fade action yet...
+	void setFadeWalkAction(BodyRect* bodyRect);
+	void setFadeRotateAction(BodyRect* bodyRect);
 	void moveOneGrid(BodyRect* bodyRect);
-	void moveFlipOneGrid(BodyRect* bodyRect);
+	void moveFadeOneGrid(BodyRect* bodyRect);
 
 	//set move action by eMoveType, if return false, rest rects' actions will be stopped
 	bool setAction(BodyRect* bodyRect);

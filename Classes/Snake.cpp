@@ -41,6 +41,11 @@ void BodyRect::setMapIndex(cocos2d::Vec2 index)
 	m_mapIndex = index;
 }
 
+void BodyRect::setRectPosition(cocos2d::Vec2 position)
+{
+	this->setPosition(position*VisibleRect::getGridLength() + VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec());
+}
+
 Vec2 BodyRect::moveDistance(eDirection dir)
 {
 	if (dir == eDir_Up)
@@ -86,6 +91,19 @@ Vec3 BodyRect::rotateArc(eDirection curDir, eDirection lastDir)
 	}
 
 	return Vec3();
+}
+
+eDirection BodyRect::oppsiteDirection(eDirection dir)
+{
+	if (dir == eDir_Up)
+		return eDir_Down;
+	else if (dir == eDir_Down)
+		return eDir_Up;
+	else if (dir == eDir_Left)
+		return eDir_Right;
+	else if (dir == eDir_Right)
+		return eDir_Left;
+	return eDir_None;
 }
 
 Snake* Snake::create(SnakeMapLayer* snakeMap)
@@ -222,14 +240,37 @@ void Snake::setAppearAction(BodyRect* bodyRect)
 	bodyRect->setMoving(true);
 }
 
-void Snake::setFlipWalkAction(BodyRect* bodyRect)
+void Snake::setFadeWalkAction(BodyRect* bodyRect)
 {
+	auto actionTime = VisibleRect::getGridLength() / m_fMoveSpeed / 2;
+	//move cross the border
+	auto moveAction = MoveBy::create(actionTime, BodyRect::moveDistance(bodyRect->getCurDirection()));
+	//destination move start
+	auto startPos = BodyRect::moveDistance(BodyRect::oppsiteDirection(bodyRect->getTransferDirection())) / VisibleRect::getGridLength() + bodyRect->getDestinationIndex();
+	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, startPos));
 
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
+	auto sequenceAction = Sequence::create(moveAction, resetPosAction, moveAction, doneAction, NULL);
+	bodyRect->runAction(sequenceAction);
+	bodyRect->setMoving(true);
 }
 
-void Snake::setFlipRotateAction(BodyRect* bodyRect)
+void Snake::setFadeRotateAction(BodyRect* bodyRect)
 {
+	auto actionTime = VisibleRect::getGridLength() / m_fMoveSpeed / 2;
+	auto arc = BodyRect::rotateArc(bodyRect->getCurDirection(), bodyRect->getLastDirection());
+	//rotate cross the border
+	auto rotateAction = RotateBy::create(actionTime, arc);
+	auto moveAction = MoveBy::create(actionTime, BodyRect::moveDistance(bodyRect->getCurDirection()));
+	//destination move start
+	auto startPos = BodyRect::moveDistance(BodyRect::oppsiteDirection(bodyRect->getTransferDirection())) / VisibleRect::getGridLength() + bodyRect->getDestinationIndex();
+	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, startPos));
 
+	auto spawnAction = Spawn::create(rotateAction, moveAction, NULL);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
+	auto sequenceAction = Sequence::create(spawnAction, resetPosAction, moveAction, doneAction, NULL);
+	bodyRect->runAction(sequenceAction);
+	bodyRect->setMoving(true);
 }
 
 void Snake::moveOneGrid(BodyRect* bodyRect)
@@ -240,12 +281,12 @@ void Snake::moveOneGrid(BodyRect* bodyRect)
 		setRotateAction(bodyRect);
 }
 
-void Snake::moveFlipOneGrid(BodyRect* bodyRect)
+void Snake::moveFadeOneGrid(BodyRect* bodyRect)
 {
 	if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
-		setFlipWalkAction(bodyRect);
+		setFadeWalkAction(bodyRect);
 	else
-		setFlipRotateAction(bodyRect);
+		setFadeRotateAction(bodyRect);
 }
 
 void Snake::crawl()
@@ -311,9 +352,12 @@ void Snake::crawl()
 bool Snake::setAction(BodyRect* bodyRect)
 {
 	//move and flip to the destination grid if the body rect is crossing the border
-	std::function<void()> moveToDes = CC_CALLBACK_0(Snake::moveOneGrid,this,bodyRect);
+	std::function<void()> moveToDes = CC_CALLBACK_0(Snake::moveOneGrid, this, bodyRect);
 	if (bodyRect->getCrossing())
-		moveToDes = CC_CALLBACK_0(Snake::moveFlipOneGrid, this, bodyRect);
+	{
+		moveToDes = CC_CALLBACK_0(Snake::moveFadeOneGrid, this, bodyRect);
+		bodyRect->setCrossing(false);
+	}
 
 	switch (bodyRect->getMoveType())
 	{
