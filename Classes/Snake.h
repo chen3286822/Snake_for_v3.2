@@ -16,6 +16,9 @@ public:
 	//last move direction
 	CC_SYNTHESIZE(eDirection, m_eLastDirection, LastDirection);
 
+	//the new direction after transfer a door or cross a border
+	CC_SYNTHESIZE(eDirection, m_eTransferDirection, TransferDirection);
+
 	//move destination
 	CC_SYNTHESIZE(cocos2d::Vec2, m_DestinationIndex, DestinationIndex);
 
@@ -25,10 +28,19 @@ public:
 	//move type from current position to the destination
 	CC_SYNTHESIZE(eMoveType, m_eMoveType, MoveType);
 
+	//is cross the border
+	CC_SYNTHESIZE(bool, m_bCrossing, Crossing);
+
+	//the current direction is set, but not moved because of the head eat food, so next time the rect should not set the direction again
+	CC_SYNTHESIZE(bool, m_bUseDirection, UseDirection);
+
 	//the index in the snake map
 	void setMapIndex(cocos2d::Vec2 index);
 	cocos2d::Vec2 getMapIndex(){ return m_mapIndex; }
 
+	//some helpful function
+	static cocos2d::Vec2 moveDistance(eDirection dir);
+	static cocos2d::Vec3 rotateArc(eDirection curDir, eDirection lastDir);
 private:
 	cocos2d::Sprite3D* m_pModel{ nullptr };
 	cocos2d::Vec2 m_mapIndex;
@@ -83,6 +95,10 @@ private:
 	void setWalkAction(BodyRect* bodyRect);
 	void setRotateAction(BodyRect* bodyRect);
 	void setAppearAction(BodyRect* bodyRect);
+	void setFlipWalkAction(BodyRect* bodyRect);
+	void setFlipRotateAction(BodyRect* bodyRect);
+	void moveOneGrid(BodyRect* bodyRect);
+	void moveFlipOneGrid(BodyRect* bodyRect);
 
 	//set move action by eMoveType, if return false, rest rects' actions will be stopped
 	bool setAction(BodyRect* bodyRect);

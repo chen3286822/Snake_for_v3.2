@@ -61,9 +61,6 @@ enum eMoveType
 	//transfer to the destination, because of a transfer door
 	eMoveType_Transfer,
 
-	//cross over the border
-	eMoveType_CrossBorder,
-
 	//the snake will be dead
 	eMoveType_Dead,
 

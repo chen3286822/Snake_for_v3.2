@@ -199,15 +199,27 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 	{
 		//the snake is crossing over the border, get the real destination
 		if (tempIndex.x < 0)
+		{
 			realIndex.x = MAPWIDTH - 1;
+			bodyRect->setTransferDirection(eDir_Left);
+		}
 		else if (tempIndex.x >= MAPWIDTH)
+		{
 			realIndex.x = 0;
+			bodyRect->setTransferDirection(eDir_Right);
+		}
 		if (tempIndex.y < 0)
+		{
 			realIndex.y = MAPHEIGHT - 1;
+			bodyRect->setTransferDirection(eDir_Up);
+		}
 		else if (realIndex.y >= MAPHEIGHT)
+		{
 			realIndex.y = 0;
+			bodyRect->setTransferDirection(eDir_Down);
+		}
 
-		moveType = eMoveType_CrossBorder;
+		bodyRect->setCrossing(true);
 	}
 	
 	//get the destination grid type
