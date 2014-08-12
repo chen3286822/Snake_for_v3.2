@@ -234,7 +234,7 @@ void Snake::setFadeWalkAction(BodyRect* bodyRect)
 	auto moveAction = MoveBy::create(actionTime, VisibleRect::getGridLength() * BodyRect::moveDistance(bodyRect->getCurDirection()));
 	//destination move start
 	auto startPos = BodyRect::moveDistance(oppositeDirection(bodyRect->getTransferDirection())) + bodyRect->getDestinationIndex();
-	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, VisibleRect::getGridLength() * startPos));
+	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, startPos));
 
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
 	auto sequenceAction = Sequence::create(moveAction, resetPosAction, moveAction, doneAction, NULL);
@@ -251,7 +251,7 @@ void Snake::setFadeRotateAction(BodyRect* bodyRect)
 	auto moveAction = MoveBy::create(actionTime, VisibleRect::getGridLength() * BodyRect::moveDistance(bodyRect->getCurDirection()));
 	//destination move start
 	auto startPos = BodyRect::moveDistance(oppositeDirection(bodyRect->getTransferDirection())) + bodyRect->getDestinationIndex();
-	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, VisibleRect::getGridLength() * startPos));
+	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, startPos));
 
 	auto spawnAction = Spawn::create(rotateAction, moveAction, NULL);
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
@@ -262,12 +262,41 @@ void Snake::setFadeRotateAction(BodyRect* bodyRect)
 
 void Snake::setScaleWalkAction(BodyRect* bodyRect)
 {
-
+	auto actionTime = VisibleRect::getGridLength() / m_fMoveSpeed / 2;
+	//move into the door
+	auto moveAction = MoveBy::create(actionTime, VisibleRect::getGridLength() * BodyRect::moveDistance(bodyRect->getCurDirection()));
+	auto scaleSmallAction = ScaleTo::create(actionTime, 0.1f);
+	auto spawnAction = Spawn::create(moveAction, scaleSmallAction, nullptr);
+	//rotate to the transfer direction and set position to the destination
+	auto arc = arcByDirection(bodyRect->getTransferDirection());
+	auto resetRotationAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRotation, bodyRect, arc));
+	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, bodyRect->getDestinationIndex()));
+	//scale back
+	auto scaleBigAction = ScaleTo::create(actionTime, 1.0f);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
+	auto sequenceAction = Sequence::create(spawnAction, resetRotationAction, resetPosAction, scaleBigAction, doneAction, NULL);
+	bodyRect->runAction(sequenceAction);
+	bodyRect->setMoving(true);
 }
 
 void Snake::setScaleRotateAction(BodyRect* bodyRect)
 {
-
+	auto actionTime = VisibleRect::getGridLength() / m_fMoveSpeed / 2;
+	auto arcRotate = BodyRect::rotateArc(bodyRect->getCurDirection(), bodyRect->getLastDirection());
+	auto rotateAction = RotateBy::create(actionTime, arcRotate);
+	auto moveAction = MoveBy::create(actionTime, VisibleRect::getGridLength() * BodyRect::moveDistance(bodyRect->getCurDirection()));
+	auto scaleSmallAction = ScaleTo::create(actionTime, 0.1f);
+	auto spawnAction = Spawn::create(moveAction, scaleSmallAction, rotateAction, nullptr);
+	//rotate to the transfer direction and set position to the destination
+	auto arc = arcByDirection(bodyRect->getTransferDirection());
+	auto resetRotationAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRotation, bodyRect, arc));
+	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, bodyRect->getDestinationIndex()));
+	//scale back
+	auto scaleBigAction = ScaleTo::create(actionTime, 1.0f);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
+	auto sequenceAction = Sequence::create(spawnAction, resetRotationAction, resetPosAction, scaleBigAction, doneAction, NULL);
+	bodyRect->runAction(sequenceAction);
+	bodyRect->setMoving(true);
 }
 
 void Snake::moveOneGrid(BodyRect* bodyRect)
@@ -304,18 +333,37 @@ void Snake::crawl()
 		pPreviousRect++;
 		if ((*it)->getUseDirection())
 		{
-			(*it)->setLastDirection((*it)->getCurDirection());		
-			if (pPreviousRect != m_lpBody.rend())
+			//when a body rect stays in a door, the direction should be transfer direction
+			if (m_pSnakeMap->isInDoor((*it)->getMapIndex()))
 			{
-				//the current direction comes from the previous body rect
-				(*it)->setCurDirection((*pPreviousRect)->getCurDirection());
+				//set the rect's direction and last direction to the transfer direction
+				(*it)->setCurDirection((*it)->getTransferDirection());
+				(*it)->setLastDirection((*it)->getTransferDirection());
+			}
+			else
+			{
+				(*it)->setLastDirection((*it)->getCurDirection());
+				if (pPreviousRect != m_lpBody.rend())
+				{
+					//the current direction comes from the previous body rect
+					(*it)->setCurDirection((*pPreviousRect)->getCurDirection());
+				}
 			}
 		}
 	}
-	m_pHead->setLastDirection(m_pHead->getCurDirection());
-	//set the head's current direction if the m_eNextDirection is set
-	if (m_eNextDirection != eDir_None)
-		m_pHead->setCurDirection(m_eNextDirection);
+	//if head stay in the door, then the direction cannot be set
+	if (!(m_pSnakeMap->isInDoor(m_pHead->getMapIndex())))
+	{
+		m_pHead->setLastDirection(m_pHead->getCurDirection());
+		//set the head's current direction if the m_eNextDirection is set
+		if (m_eNextDirection != eDir_None)
+			m_pHead->setCurDirection(m_eNextDirection);
+	}
+	else
+	{
+		//recover the m_eNextDirection
+		m_eNextDirection = m_pHead->getCurDirection();
+	}
 
 	//all the body rects' current direction are set, not used yet
 	for (auto bodyRect : m_lpBody)
@@ -426,6 +474,11 @@ void Snake::resetGridType(BodyRect* bodyRect)
 	{
 		//just set the destination index to eType_Snake
 		m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
+	}
+	else if (moveType == eMoveType_Transfer)
+	{
+		//just set the original index to empty, destination index do not set to snake, remain to eType_Door
+		m_pSnakeMap->setGridType(bodyRect->getMapIndex(), eType_Empty);
 	}
 	else
 	{

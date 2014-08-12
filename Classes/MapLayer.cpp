@@ -193,7 +193,7 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 	auto realIndex = tempIndex;
 	//move type
 	auto moveType = eMoveType_None;
-	 
+	bodyRect->setTransferDirection(bodyRect->getCurDirection());
 	//check if the 'destination' is valid
 	if (tempIndex.x < 0 || tempIndex.x >= MAPWIDTH || tempIndex.y < 0 || tempIndex.y >= MAPHEIGHT)
 	{
@@ -432,4 +432,13 @@ Vec2 SnakeMapLayer::getEmptyGridIndex(int index)
 		}
 	}
 	return emptyIndex;
+}
+
+bool SnakeMapLayer::isInDoor(cocos2d::Vec2 index)
+{
+	auto door = m_pItemFactory->getDoor(index);
+	if (door)
+		return true;
+
+	return false;
 }

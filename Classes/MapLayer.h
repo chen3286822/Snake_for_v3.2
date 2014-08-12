@@ -52,6 +52,8 @@ public:
 	void setOccupy(cocos2d::Vec2 index, bool bOccupy);
 	bool getOccupy(cocos2d::Vec2 index);
 
+	//check if the body rect stays in the out door
+	bool isInDoor(cocos2d::Vec2 index);
 protected:
 	//for debugging
 	void onDraw(const cocos2d::Mat4& transform, uint32_t flags);

@@ -157,7 +157,8 @@ void ItemFactory::addDoor()
 	m_pDoors.first->setIndex(mapIndex);
 
 	//set the door transfer direction
-	auto transferDir = randomDirection();
+	//auto transferDir = randomDirection();
+	auto transferDir = eDir_Up;
 	m_pDoors.first->setTransferDirection(transferDir);
 	//actual door direction is opposite to transfer direction
 	m_pDoors.first->setRotation(arcByDirection(oppositeDirection(transferDir)));
@@ -173,7 +174,8 @@ void ItemFactory::addDoor()
 	m_pDoors.second->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*mapIndex);
 	m_pDoors.second->setIndex(mapIndex);
 
-	transferDir = randomDirection();
+	//transferDir = randomDirection();
+	transferDir = eDir_Right;
 	m_pDoors.second->setTransferDirection(transferDir);
 	m_pDoors.second->setRotation(arcByDirection(oppositeDirection(transferDir)));
 
