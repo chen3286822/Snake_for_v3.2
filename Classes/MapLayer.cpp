@@ -201,22 +201,18 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 		if (tempIndex.x < 0)
 		{
 			realIndex.x = MAPWIDTH - 1;
-			bodyRect->setTransferDirection(eDir_Left);
 		}
 		else if (tempIndex.x >= MAPWIDTH)
 		{
 			realIndex.x = 0;
-			bodyRect->setTransferDirection(eDir_Right);
 		}
 		if (tempIndex.y < 0)
 		{
 			realIndex.y = MAPHEIGHT - 1;
-			bodyRect->setTransferDirection(eDir_Down);
 		}
 		else if (realIndex.y >= MAPHEIGHT)
 		{
 			realIndex.y = 0;
-			bodyRect->setTransferDirection(eDir_Up);
 		}
 
 		bodyRect->setCrossing(true);
@@ -229,7 +225,33 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 	case eType_Door:
 	{
 					   //check if the direction is right to the door
-					   moveType = eMoveType_Transfer;
+					   auto door = m_pItemFactory->getDoor(realIndex);
+					   if (door)
+					   {
+						   //cross the door
+						   if (bodyRect->getCurDirection() == door->getTransferDirection())
+						   {
+							   moveType = eMoveType_Transfer;
+							   //the destination is close to the other door
+							   auto otherDoor = door->getOtherDoor();
+							   if (otherDoor)
+							   {
+								   auto outDirection = oppositeDirection(otherDoor->getTransferDirection());
+								   //just stop in the out door, and the direction cannot be changed until the body rect move out of the door througn the transfer direction
+								   realIndex = otherDoor->getIndex();
+								   bodyRect->setTransferDirection(outDirection);
+							   }
+						   }
+						   else
+						   {
+							   //like hit the wall
+							   moveType = eMoveType_Dead;
+						   }
+					   }
+					   else
+					   {
+						   //wrong branch
+					   }
 	}
 		break;
 	case eType_Food:
@@ -337,20 +359,33 @@ void SnakeMapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
 	}
 }
 
-void SnakeMapLayer::setOccupy(Vec2 index)
+void SnakeMapLayer::setOccupy(Vec2 index, bool bOccupy)
 {
 	int x = (int)index.x;
 	int y = (int)index.y;
 	if (x < 0 || y < 0 || x >= MAPWIDTH || y >= MAPHEIGHT)
 		return;
 
-	m_iBlocks[x][y].m_bOccupied = true;
+	m_iBlocks[x][y].m_bOccupied = bOccupy;
+}
+
+bool SnakeMapLayer::getOccupy(Vec2 index)
+{
+	int x = (int)index.x;
+	int y = (int)index.y;
+	if (x < 0 || y < 0 || x >= MAPWIDTH || y >= MAPHEIGHT)
+		return false;
+
+	return m_iBlocks[x][y].m_bOccupied;
 }
 
 //modify later
 int SnakeMapLayer::getMovableNumbers()
 {
-	return MAPWIDTH*MAPHEIGHT;
+	int numbers = MAPWIDTH*MAPHEIGHT;
+	if (m_pItemFactory)
+		numbers -= m_pItemFactory->getItemsNumber();
+	return numbers;
 }
 
 void SnakeMapLayer::setGridType(cocos2d::Vec2 index, eType type)

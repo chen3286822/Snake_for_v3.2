@@ -44,7 +44,6 @@ public:
 	//some helpful function
 	static cocos2d::Vec2 moveDistance(eDirection dir);
 	static cocos2d::Vec3 rotateArc(eDirection curDir, eDirection lastDir);
-	static eDirection oppsiteDirection(eDirection dir);
 private:
 	cocos2d::Sprite3D* m_pModel{ nullptr };
 	cocos2d::Vec2 m_mapIndex;
@@ -102,8 +101,11 @@ private:
 	//sprite 3D do not support fade action yet...
 	void setFadeWalkAction(BodyRect* bodyRect);
 	void setFadeRotateAction(BodyRect* bodyRect);
+	void setScaleWalkAction(BodyRect* bodyRect);
+	void setScaleRotateAction(BodyRect* bodyRect);
 	void moveOneGrid(BodyRect* bodyRect);
 	void moveFadeOneGrid(BodyRect* bodyRect);
+	void moveScaleOneGrid(BodyRect* bodyRect);
 
 	//set move action by eMoveType, if return false, rest rects' actions will be stopped
 	bool setAction(BodyRect* bodyRect);

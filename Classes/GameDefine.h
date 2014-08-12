@@ -10,11 +10,20 @@ enum eDirection
 	eDir_Right,
 };
 
+//get a random direction
+eDirection randomDirection();
+//get the rotate arc according to the direction
+float arcByDirection(eDirection dir);
+//get the opposited direction
+eDirection oppositeDirection(eDirection dir);
+
 enum eID
 {
 	eID_SnakeMap,
 	eID_Snake,
 	eID_Food,
+	eID_Door1,
+	eID_Door2,
 	eID_ItemFactory,
 };
 
@@ -82,5 +91,6 @@ enum eMoveAction
 #define SnakeBodyModel "models/box.c3b"
 #define SnakeTailModel "models/box.c3b"
 #define FoodModel "models/box.c3b"
+#define DoorModel "models/door.c3b"
 
 #endif

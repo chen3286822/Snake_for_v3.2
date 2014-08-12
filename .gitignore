@@ -55,6 +55,7 @@ build/
 [Bb]uild[Ll]og.*
 
 Debug.win32/
+Release.win32/
 
 *_i.c
 *_p.c

@@ -36,6 +36,9 @@
     <ClCompile Include="..\Classes\Item.cpp">
       <Filter>Classes\Element</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\GameDefine.cpp">
+      <Filter>Classes\Help</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -66,7 +69,10 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\Resources\models\box2.png">
+    <Image Include="..\Resources\models\grass.png">
+      <Filter>resource</Filter>
+    </Image>
+    <Image Include="..\Resources\models\stone.png">
       <Filter>resource</Filter>
     </Image>
   </ItemGroup>

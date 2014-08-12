@@ -49,13 +49,13 @@ void BodyRect::setRectPosition(cocos2d::Vec2 position)
 Vec2 BodyRect::moveDistance(eDirection dir)
 {
 	if (dir == eDir_Up)
-		return Vec2(0, VisibleRect::getGridLength());
+		return Vec2(0, 1);
 	else if (dir == eDir_Down)
-		return Vec2(0, -VisibleRect::getGridLength());
+		return Vec2(0, -1);
 	else if (dir == eDir_Left)
-		return Vec2(-VisibleRect::getGridLength(), 0);
+		return Vec2(-1, 0);
 	else if (dir == eDir_Right)
-		return Vec2(VisibleRect::getGridLength(), 0);
+		return Vec2(1, 0);
 	return Vec2(0, 0);
 }
 
@@ -91,19 +91,6 @@ Vec3 BodyRect::rotateArc(eDirection curDir, eDirection lastDir)
 	}
 
 	return Vec3();
-}
-
-eDirection BodyRect::oppsiteDirection(eDirection dir)
-{
-	if (dir == eDir_Up)
-		return eDir_Down;
-	else if (dir == eDir_Down)
-		return eDir_Up;
-	else if (dir == eDir_Left)
-		return eDir_Right;
-	else if (dir == eDir_Right)
-		return eDir_Left;
-	return eDir_None;
 }
 
 Snake* Snake::create(SnakeMapLayer* snakeMap)
@@ -210,7 +197,7 @@ int Snake::getLength()
 
 void Snake::setWalkAction(BodyRect* bodyRect)
 {
-	auto moveAction = MoveBy::create(VisibleRect::getGridLength()/m_fMoveSpeed, BodyRect::moveDistance(bodyRect->getCurDirection()));
+	auto moveAction = MoveBy::create(VisibleRect::getGridLength() / m_fMoveSpeed, VisibleRect::getGridLength() * BodyRect::moveDistance(bodyRect->getCurDirection()));
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
 	auto sequenceAction = Sequence::create(moveAction, doneAction, NULL);
 	bodyRect->runAction(sequenceAction);
@@ -222,7 +209,7 @@ void Snake::setRotateAction(BodyRect* bodyRect)
 	auto moveOffset = BodyRect::moveDistance(bodyRect->getCurDirection());
 	auto arc = BodyRect::rotateArc(bodyRect->getCurDirection(), bodyRect->getLastDirection());
 	auto rotateAction = RotateBy::create(VisibleRect::getGridLength() / m_fMoveSpeed, arc);
-	auto moveAction = MoveBy::create(VisibleRect::getGridLength() / m_fMoveSpeed, moveOffset);
+	auto moveAction = MoveBy::create(VisibleRect::getGridLength() / m_fMoveSpeed, VisibleRect::getGridLength() * moveOffset);
 	auto spawnAction = Spawn::create(rotateAction, moveAction, NULL);
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
 	auto sequenceAction = Sequence::create(spawnAction, doneAction, NULL);
@@ -244,10 +231,10 @@ void Snake::setFadeWalkAction(BodyRect* bodyRect)
 {
 	auto actionTime = VisibleRect::getGridLength() / m_fMoveSpeed / 2;
 	//move cross the border
-	auto moveAction = MoveBy::create(actionTime, BodyRect::moveDistance(bodyRect->getCurDirection()));
+	auto moveAction = MoveBy::create(actionTime, VisibleRect::getGridLength() * BodyRect::moveDistance(bodyRect->getCurDirection()));
 	//destination move start
-	auto startPos = BodyRect::moveDistance(BodyRect::oppsiteDirection(bodyRect->getTransferDirection())) / VisibleRect::getGridLength() + bodyRect->getDestinationIndex();
-	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, startPos));
+	auto startPos = BodyRect::moveDistance(oppositeDirection(bodyRect->getTransferDirection())) + bodyRect->getDestinationIndex();
+	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, VisibleRect::getGridLength() * startPos));
 
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
 	auto sequenceAction = Sequence::create(moveAction, resetPosAction, moveAction, doneAction, NULL);
@@ -261,16 +248,26 @@ void Snake::setFadeRotateAction(BodyRect* bodyRect)
 	auto arc = BodyRect::rotateArc(bodyRect->getCurDirection(), bodyRect->getLastDirection());
 	//rotate cross the border
 	auto rotateAction = RotateBy::create(actionTime, arc);
-	auto moveAction = MoveBy::create(actionTime, BodyRect::moveDistance(bodyRect->getCurDirection()));
+	auto moveAction = MoveBy::create(actionTime, VisibleRect::getGridLength() * BodyRect::moveDistance(bodyRect->getCurDirection()));
 	//destination move start
-	auto startPos = BodyRect::moveDistance(BodyRect::oppsiteDirection(bodyRect->getTransferDirection())) / VisibleRect::getGridLength() + bodyRect->getDestinationIndex();
-	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, startPos));
+	auto startPos = BodyRect::moveDistance(oppositeDirection(bodyRect->getTransferDirection())) + bodyRect->getDestinationIndex();
+	auto resetPosAction = CallFunc::create(CC_CALLBACK_0(BodyRect::setRectPosition, bodyRect, VisibleRect::getGridLength() * startPos));
 
 	auto spawnAction = Spawn::create(rotateAction, moveAction, NULL);
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(Snake::setNextDirection, this, bodyRect));
 	auto sequenceAction = Sequence::create(spawnAction, resetPosAction, moveAction, doneAction, NULL);
 	bodyRect->runAction(sequenceAction);
 	bodyRect->setMoving(true);
+}
+
+void Snake::setScaleWalkAction(BodyRect* bodyRect)
+{
+
+}
+
+void Snake::setScaleRotateAction(BodyRect* bodyRect)
+{
+
 }
 
 void Snake::moveOneGrid(BodyRect* bodyRect)
@@ -287,6 +284,14 @@ void Snake::moveFadeOneGrid(BodyRect* bodyRect)
 		setFadeWalkAction(bodyRect);
 	else
 		setFadeRotateAction(bodyRect);
+}
+
+void Snake::moveScaleOneGrid(BodyRect* bodyRect)
+{
+	if (bodyRect->getCurDirection() == bodyRect->getLastDirection())
+		setScaleWalkAction(bodyRect);
+	else
+		setScaleRotateAction(bodyRect);
 }
 
 void Snake::crawl()
@@ -368,20 +373,29 @@ bool Snake::setAction(BodyRect* bodyRect)
 		break;
 	case eMoveType_Eat:
 	{
-		//only the head rect will run here
-		//a new rect will be 'born' in the head's position
-		m_pToAdd = BodyRect::create(SnakeBodyModel);
-		this->addChild(m_pToAdd, 1);
-		m_pToAdd->setPosition(bodyRect->getPosition());
-		m_pToAdd->setMapIndex(bodyRect->getMapIndex());
-		m_pToAdd->setDestinationIndex(bodyRect->getMapIndex());
-		m_pToAdd->setCurDirection(bodyRect->getCurDirection());
-		setAppearAction(m_pToAdd);
+						  //only the head rect will run here
+						  //a new rect will be 'born' in the head's position
+						  m_pToAdd = BodyRect::create(SnakeBodyModel);
+						  this->addChild(m_pToAdd, 1);
+						  m_pToAdd->setPosition(bodyRect->getPosition());
+						  m_pToAdd->setMapIndex(bodyRect->getMapIndex());
+						  m_pToAdd->setDestinationIndex(bodyRect->getMapIndex());
+						  m_pToAdd->setCurDirection(bodyRect->getCurDirection());
+						  //rotate the rect to fit the snake
+						  auto dir = bodyRect->getCurDirection();
+						  m_pToAdd->setRotation(arcByDirection(dir));
 
-		//then the head will move to the destination.
-		moveToDes();
+						  setAppearAction(m_pToAdd);
+
+						  //then the head will move to the destination.
+						  moveToDes();
 	}
 		return false;
+	case eMoveType_Transfer:
+	{
+							   moveScaleOneGrid(bodyRect);
+	}
+		break;;
 	}
 	return true;
 }

@@ -49,7 +49,8 @@ public:
 	void setGridType(cocos2d::Vec2 index, eType type);
 	eType getGridType(cocos2d::Vec2 index);
 
-	void setOccupy(cocos2d::Vec2 index);
+	void setOccupy(cocos2d::Vec2 index, bool bOccupy);
+	bool getOccupy(cocos2d::Vec2 index);
 
 protected:
 	//for debugging
