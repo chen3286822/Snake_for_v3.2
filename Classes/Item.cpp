@@ -20,7 +20,7 @@ bool Food::init()
 	return true;
 }
 
-void Food::effect()
+void Food::effect(Snake* snake)
 {
 
 }
@@ -42,9 +42,34 @@ bool Door::init()
 	return true;
 }
 
-void Door::effect()
+void Door::effect(Snake* snake)
 {
 
+}
+
+bool Apple::init()
+{
+	if (!Node::init())
+	{
+		return false;
+	}
+
+	//set  the food model
+	m_pModel = Sprite3D::create(AppleModel);
+	this->addChild(m_pModel, 1);
+
+	m_fDuration = 0.0f;
+
+	return true;
+}
+
+void Apple::effect(Snake* snake)
+{
+	// speed up the snake
+	if (snake)
+	{
+		snake->setSpeed(snake->getSpeed() + 16.0f);
+	}
 }
 
 ItemFactory* ItemFactory::create(SnakeMapLayer* snakeMap)
@@ -73,6 +98,25 @@ bool ItemFactory::initWithMap(SnakeMapLayer* snakeMap)
 	return true;
 }
 
+Item* ItemFactory::getItem(cocos2d::Vec2 index)
+{
+	int x = (int)index.x;
+	int y = (int)index.y;
+	if (x < 0 || y < 0 || x >= MAPWIDTH || y >= MAPHEIGHT)
+		return nullptr;
+
+	if (m_pFood && m_pFood->getIndex() == index)
+		return m_pFood;
+	else if (m_pDoors.first && m_pDoors.first->getIndex() == index)
+		return m_pDoors.first;
+	else if (m_pDoors.second && m_pDoors.second->getIndex() == index)
+		return m_pDoors.second;
+	else if (m_pApple->getIndex() == index)
+		return m_pApple;
+
+	return nullptr;
+}
+
 int ItemFactory::getItemsNumber()
 {
 	int number = 0;
@@ -80,6 +124,8 @@ int ItemFactory::getItemsNumber()
 		number++;
 	if (m_pDoors.first && m_pDoors.second)
 		number += 2;
+	if (m_pApple)
+		number++;
 
 	return number;
 }
@@ -91,6 +137,9 @@ void ItemFactory::produce()
 
 	//add the transfer doors
 	addDoor();
+
+	//add the speed apple
+	addApple();
 }
 
 void ItemFactory::addFood()
@@ -206,4 +255,19 @@ Door* ItemFactory::getDoor(cocos2d::Vec2 index)
 		return m_pDoors.second;
 	else
 		return nullptr;
+}
+
+void ItemFactory::addApple()
+{
+	//check if the apple exist
+	if (m_pApple)
+		return;
+
+}
+
+void ItemFactory::removeApple()
+{
+	//here we do not need to reset the map grid type, because it will be set later in Snake::resetGridType
+	this->removeChildByTag(eID_Apple);
+	m_pApple = nullptr;
 }

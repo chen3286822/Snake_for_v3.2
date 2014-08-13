@@ -178,6 +178,11 @@ void Snake::resumeAll()
 	resume();
 }
 
+void Snake::setSpeed(float speed)
+{
+	m_fMoveSpeed = speed;
+}
+
 void Snake::setDirection(eDirection dir)
 {
 	if (m_pHead)
@@ -361,7 +366,7 @@ void Snake::crawl()
 	}
 	else
 	{
-		//recover the m_eNextDirection
+		//cover the m_eNextDirection
 		m_eNextDirection = m_pHead->getCurDirection();
 	}
 
@@ -375,11 +380,11 @@ void Snake::crawl()
 		//find every body rect's destination and move type
 		m_pSnakeMap->setDestinationOfBodyRect(bodyRect);
 
-		//set move action
-		auto bContinue = setAction(bodyRect);
-
 		//if destination grid contains something special, it effects here
 		effectDestination(bodyRect);
+
+		//set move action
+		auto bContinue = setAction(bodyRect);
 
 		//reset the snake map grid type
 		resetGridType(bodyRect);
@@ -443,27 +448,37 @@ bool Snake::setAction(BodyRect* bodyRect)
 	{
 							   moveScaleOneGrid(bodyRect);
 	}
-		break;;
+		break;
+	case eMoveType_Dead:
+	{
+						   m_pSnakeMap->die();
+	}
+		return false;
 	}
 	return true;
 }
 
 void Snake::effectDestination(BodyRect* bodyRect)
 {
-	switch (m_pSnakeMap->getGridType(bodyRect->getDestinationIndex()))
+	//let the item effect
+	auto itemFactory = m_pSnakeMap->getItemFactory();
+	if (itemFactory)
 	{
-	case eType_Food:
-	{
-		//eat the food
-		auto itemFactory = dynamic_cast<ItemFactory*>(m_pSnakeMap->getChildByTag(eID_ItemFactory));
-		if (itemFactory)
+		auto item = itemFactory->getItem(bodyRect->getMapIndex());
+		if (item)
+			item->effect(this);
+
+		switch (m_pSnakeMap->getGridType(bodyRect->getDestinationIndex()))
 		{
-			itemFactory->eatFood();
+		case eType_Food:
+		{
+						   //eat the food
+						   itemFactory->eatFood();
 		}
-	}
-		break;
-	default:
-		break;
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -484,7 +499,9 @@ void Snake::resetGridType(BodyRect* bodyRect)
 	{
 		//set the current grid and destination grid's grid type except the snake is dead
 		m_pSnakeMap->setGridType(bodyRect->getDestinationIndex(), eType_Snake);
-		m_pSnakeMap->setGridType(bodyRect->getMapIndex(), eType_Empty);
+		//if the body rect stays in the door, the grid cannot be set to empty
+		if (!(m_pSnakeMap->isInDoor(bodyRect->getMapIndex())))
+			m_pSnakeMap->setGridType(bodyRect->getMapIndex(), eType_Empty);
 	}
 }
 

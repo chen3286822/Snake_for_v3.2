@@ -65,11 +65,12 @@ public:
 	//set the snake's crawling direction
 	void setDirection(eDirection dir);
 
-	//the snake will add a body rect just behind the head
-	void grow();
-
 	//make the snake crawls
 	void crawl();
+
+	//set the crawl speed
+	void setSpeed(float speed);
+	float getSpeed(){ return m_fMoveSpeed; }
 
 	//the number of body rect, include head and tail
 	int getLength();

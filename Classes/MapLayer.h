@@ -34,7 +34,11 @@ public:
 public:
 	virtual void update(float dt) override;
 	void onKeyReleased(cocos2d::EventKeyboard::KeyCode keycode, cocos2d::Event* event);
+	void die();
+	void restart(cocos2d::Ref* pSender);
 
+	ItemFactory* getItemFactory(){ return m_pItemFactory };
+	Snake* getSnake(){ return m_pSnake; }
 	//get all the movable grids' sum, some map may contains some immovable blocks and should be excluded
 	int getMovableNumbers();
 

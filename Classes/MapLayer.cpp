@@ -169,6 +169,24 @@ void SnakeMapLayer::onDraw(const Mat4& transform, uint32_t flags)
 	director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
 }
 
+void SnakeMapLayer::die()
+{
+	//pause the snake
+	m_pSnake->pauseAll();
+
+	auto restartLabel = Label::createWithSystemFont("Restart", "Arial", 20);
+	auto restartItem = MenuItemLabel::create(restartLabel, CC_CALLBACK_1(SnakeMapLayer::restart, this));
+	restartItem->setPosition(VisibleRect::center());
+	auto menu = Menu::create(restartItem, NULL);
+	menu->setPosition(Vec2::ZERO);
+	this->addChild(menu, 10);
+}
+
+void SnakeMapLayer::restart(Ref* pSender)
+{
+	Director::getInstance()->replaceScene(SnakeMapLayer::createScene());
+}
+
 void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 {
 	if (!bodyRect)

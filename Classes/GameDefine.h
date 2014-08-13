@@ -24,6 +24,7 @@ enum eID
 	eID_Food,
 	eID_Door1,
 	eID_Door2,
+	eID_Apple,
 	eID_ItemFactory,
 };
 
@@ -92,5 +93,6 @@ enum eMoveAction
 #define SnakeTailModel "models/box.c3b"
 #define FoodModel "models/box.c3b"
 #define DoorModel "models/door.c3b"
+#define AppleModel "models/box2.c3b"
 
 #endif

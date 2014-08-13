@@ -4,13 +4,14 @@
 #include "cocos2d.h"
 #include "GameDefine.h"
 
+class Snake;
 class Item : public cocos2d::Node
 {
 public:
 	virtual ~Item(){}
 
 	// the item will be effective
-	virtual void effect() = 0;
+	virtual void effect(Snake*) = 0;
 
 	// the map index
 	CC_SYNTHESIZE(cocos2d::Vec2, m_Index, Index);
@@ -19,28 +20,63 @@ protected:
 	cocos2d::Sprite3D* m_pModel{ nullptr };
 };
 
+// snake eat it, will grow a new body rect
 class Food : public Item
 {
 public:
 	CREATE_FUNC(Food);
 
 	virtual bool init() override;
-	virtual void effect() override;
+	virtual void effect(Snake* snake) override;
 };
 
+// the transfer door, snake can transfer to another grid from cross the door
 class Door : public Item
 {
 public:
 	CREATE_FUNC(Door);
 
 	virtual bool init() override;
-	virtual void effect() override;
+	virtual void effect(Snake* snake) override;
 
 	//the direction that snake can cross the door, if the snake's direction isn't equal to this, the door is blocked
 	CC_SYNTHESIZE(eDirection, m_eTransferDirection, TransferDirection);
 
 	//the other door that connect to this
 	CC_SYNTHESIZE(Door*, m_otherDoor, OtherDoor);
+};
+
+// score apple, snake eat it will gain points
+class Apple : public Item
+{
+public:
+	CREATE_FUNC(Apple);
+
+	virtual bool init() override;
+	virtual void effect(Snake* snake) override;
+
+	// duration that the apple exist
+	CC_SYNTHESIZE(float, m_fDuration, Duration);
+};
+
+// speed star, snake eat it will speed up and gain the score obtained
+class Star : public Item
+{
+public:
+	CREATE_FUNC(Star);
+
+	virtual bool init() override;
+	virtual void effect(Snake* snake) override;
+};
+
+// slow ball, snake eat it will slow down itself for a while
+class Ball : public Item
+{
+public:
+	CREATE_FUNC(Ball);
+
+	virtual bool init() override;
+	virtual void effect(Snake* snake) override;
 };
 
 class SnakeMapLayer;
@@ -50,6 +86,9 @@ class ItemFactory : public cocos2d::Node
 public:
 	static ItemFactory* create(SnakeMapLayer* snakeMap);
 	bool initWithMap(SnakeMapLayer* snakeMap);
+
+	//get the item
+	Item* getItem(cocos2d::Vec2 index);
 
 	//get items number
 	int getItemsNumber();
@@ -65,14 +104,19 @@ public:
 
 	//get the door
 	Door* getDoor(cocos2d::Vec2 index);
+
+	//eat or make the apple disappear
+	void removeApple();
 private:
 	SnakeMapLayer* m_pSnakeMap{ nullptr };
 
 	Food* m_pFood{ nullptr };
 	std::pair<Door*, Door*> m_pDoors;
+	Apple* m_pApple{ nullptr };
 
 	void addFood();
-	//the doors should not be set close, and can not be set at the border
 	void addDoor();
+	// apple exist in finite time
+	void addApple();
 };
 #endif
