@@ -294,7 +294,7 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 void SnakeMapLayer::update(float dt)
 {
 	if (m_pItemFactory)
-		m_pItemFactory->produce();
+		m_pItemFactory->produce(dt);
 // 	if (m_pBox)
 // 	{
 // 		auto pos = m_pBox->getPosition();
@@ -328,9 +328,9 @@ void SnakeMapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
 	{
 	case EventKeyboard::KeyCode::KEY_ESCAPE:
 	{
-											   Director::getInstance()->end();
+		Director::getInstance()->end();
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-											   exit(0);
+		exit(0);
 #endif
 	}
 		break;
@@ -339,37 +339,40 @@ void SnakeMapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
 	case EventKeyboard::KeyCode::KEY_UP_ARROW:
 	case EventKeyboard::KeyCode::KEY_DOWN_ARROW:
 	{
-												   if (m_pSnake)
-												   {
-													   auto keyToDirection = [=](EventKeyboard::KeyCode key) -> eDirection
-													   {
-														   if (key == EventKeyboard::KeyCode::KEY_LEFT_ARROW)
-															   return eDir_Left;
-														   else if (key == EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
-															   return eDir_Right;
-														   else if (key == EventKeyboard::KeyCode::KEY_UP_ARROW)
-															   return eDir_Up;
-														   else if (key == EventKeyboard::KeyCode::KEY_DOWN_ARROW)
-															   return eDir_Down;
-														   return eDir_None;
-													   };
-													   m_pSnake->setDirection(keyToDirection(keycode));
-												   }
+		if (m_pSnake)
+		{
+			auto keyToDirection = [=](EventKeyboard::KeyCode key) -> eDirection
+			{
+				if (key == EventKeyboard::KeyCode::KEY_LEFT_ARROW)
+					return eDir_Left;
+				else if (key == EventKeyboard::KeyCode::KEY_RIGHT_ARROW)
+					return eDir_Right;
+				else if (key == EventKeyboard::KeyCode::KEY_UP_ARROW)
+					return eDir_Up;
+				else if (key == EventKeyboard::KeyCode::KEY_DOWN_ARROW)
+					return eDir_Down;
+				return eDir_None;
+			};
+			m_pSnake->setDirection(keyToDirection(keycode));
+		}
 	}
 		break;
 	case EventKeyboard::KeyCode::KEY_F1:
 	{
-										   Director::getInstance()->replaceScene(SnakeMapLayer::createScene());
+		Director::getInstance()->replaceScene(SnakeMapLayer::createScene());
 	}
 		break;
 	case EventKeyboard::KeyCode::KEY_F2:
 	{
-										   m_pSnake->pauseAll();
+		m_pSnake->pauseAll();
+		unscheduleUpdate();
 	}
 		break;
 	case EventKeyboard::KeyCode::KEY_F3:
 	{
-										   m_pSnake->resumeAll();
+		scheduleUpdate();
+		m_pSnake->resumeAll();
+
 	}
 		break;
 	default:

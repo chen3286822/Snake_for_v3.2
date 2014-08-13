@@ -15,6 +15,9 @@ public:
 
 	// the map index
 	CC_SYNTHESIZE(cocos2d::Vec2, m_Index, Index);
+
+	// duration that the apple exist
+	CC_SYNTHESIZE(float, m_fDuration, Duration);
 protected:
 	// the item model
 	cocos2d::Sprite3D* m_pModel{ nullptr };
@@ -54,9 +57,6 @@ public:
 
 	virtual bool init() override;
 	virtual void effect(Snake* snake) override;
-
-	// duration that the apple exist
-	CC_SYNTHESIZE(float, m_fDuration, Duration);
 };
 
 // speed star, snake eat it will speed up and gain the score obtained
@@ -94,7 +94,7 @@ public:
 	int getItemsNumber();
 
 	// produce items, it it called every frame
-	void produce();
+	void produce(float dt);
 
 	//remove the food
 	void eatFood();
@@ -113,10 +113,14 @@ private:
 	Food* m_pFood{ nullptr };
 	std::pair<Door*, Door*> m_pDoors;
 	Apple* m_pApple{ nullptr };
+	float m_fTimeToAddApple{ 0 };
 
+	//remove expired item
+	void removeExpiredItem(float dt);
+	
 	void addFood();
 	void addDoor();
 	// apple exist in finite time
-	void addApple();
+	void addApple(float dt);
 };
 #endif

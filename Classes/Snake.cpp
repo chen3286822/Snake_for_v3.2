@@ -464,7 +464,7 @@ void Snake::effectDestination(BodyRect* bodyRect)
 	auto itemFactory = m_pSnakeMap->getItemFactory();
 	if (itemFactory)
 	{
-		auto item = itemFactory->getItem(bodyRect->getMapIndex());
+		auto item = itemFactory->getItem(bodyRect->getDestinationIndex());
 		if (item)
 			item->effect(this);
 
@@ -472,8 +472,14 @@ void Snake::effectDestination(BodyRect* bodyRect)
 		{
 		case eType_Food:
 		{
-						   //eat the food
-						   itemFactory->eatFood();
+			//eat the food
+			itemFactory->eatFood();
+		}
+			break;
+		case eType_Apple:
+		{
+			// remove the apple
+			itemFactory->removeApple();
 		}
 			break;
 		default:

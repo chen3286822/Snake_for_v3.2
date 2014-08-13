@@ -37,7 +37,7 @@ public:
 	void die();
 	void restart(cocos2d::Ref* pSender);
 
-	ItemFactory* getItemFactory(){ return m_pItemFactory };
+	ItemFactory* getItemFactory(){ return m_pItemFactory; }
 	Snake* getSnake(){ return m_pSnake; }
 	//get all the movable grids' sum, some map may contains some immovable blocks and should be excluded
 	int getMovableNumbers();

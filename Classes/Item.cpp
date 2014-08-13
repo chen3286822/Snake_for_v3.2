@@ -111,7 +111,7 @@ Item* ItemFactory::getItem(cocos2d::Vec2 index)
 		return m_pDoors.first;
 	else if (m_pDoors.second && m_pDoors.second->getIndex() == index)
 		return m_pDoors.second;
-	else if (m_pApple->getIndex() == index)
+	else if (m_pApple && m_pApple->getIndex() == index)
 		return m_pApple;
 
 	return nullptr;
@@ -130,7 +130,7 @@ int ItemFactory::getItemsNumber()
 	return number;
 }
 
-void ItemFactory::produce()
+void ItemFactory::produce(float dt)
 {
 	//produce food when necessary
 	addFood();
@@ -139,7 +139,24 @@ void ItemFactory::produce()
 	addDoor();
 
 	//add the speed apple
-	addApple();
+	addApple(dt);
+
+	//check and remove expired item
+	removeExpiredItem(dt);
+}
+
+void ItemFactory::removeExpiredItem(float dt)
+{
+	//check the apple's duration
+	if (m_pApple)
+	{
+		if (m_pApple->getDuration() <= 0)
+			removeApple();
+		else
+		{
+			m_pApple->setDuration(m_pApple->getDuration() - dt);
+		}
+	}
 }
 
 void ItemFactory::addFood()
@@ -148,13 +165,13 @@ void ItemFactory::addFood()
 	if (m_pFood)
 		return;
 
-	//check the empty block
+	//check the empty grid
 	Snake* snake = dynamic_cast<Snake*>(getParent()->getChildByTag(eID_Snake));
 	if (!snake)
 		return;
 	int left = m_pSnakeMap->getMovableNumbers() - snake->getLength();
 
-	//no empty blocks left, you win
+	//no empty grids left, you win
 	if (left <= 0)
 		return;
 
@@ -185,13 +202,13 @@ void ItemFactory::addDoor()
 	if (m_pDoors.first != nullptr || m_pDoors.second != nullptr)
 		return;
 
-	//check the empty block
-	Snake* snake = dynamic_cast<Snake*>(getParent()->getChildByTag(eID_Snake));
+	//check the empty grid
+	Snake* snake = m_pSnakeMap->getSnake();
 	if (!snake)
 		return;
 	int left = m_pSnakeMap->getMovableNumbers() - snake->getLength();
 
-	//no empty blocks left
+	//no empty grids left
 	if (left <= 0)
 		return;
 
@@ -257,12 +274,45 @@ Door* ItemFactory::getDoor(cocos2d::Vec2 index)
 		return nullptr;
 }
 
-void ItemFactory::addApple()
+void ItemFactory::addApple(float dt)
 {
 	//check if the apple exist
 	if (m_pApple)
 		return;
 
+	//check if the random time has finished
+	if (m_fTimeToAddApple > 0)
+	{
+		m_fTimeToAddApple -= dt;
+		return;
+	}
+
+	// it's time to add apple, check the empty grid
+	Snake* snake = m_pSnakeMap->getSnake();
+	if (!snake)
+		return;
+	int left = m_pSnakeMap->getMovableNumbers() - snake->getLength();
+
+	//no empty grids left
+	if (left <= 0)
+		return;
+
+	//set the door index
+	int index = (int)(rand() % left + 1);
+	auto mapIndex = m_pSnakeMap->getEmptyGridIndex(index);
+
+	//create apple model
+	m_pApple = Apple::create();
+	this->addChild(m_pApple, 1, eID_Apple);
+	m_pApple->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*mapIndex);
+	m_pApple->setIndex(mapIndex);
+
+	//set the grid type
+	m_pSnakeMap->setGridType(mapIndex, eType_Apple);
+
+	//set the duration from [15, 25] seconds
+	auto duration = rand() % 16 + 10.0f;
+	m_pApple->setDuration(duration);
 }
 
 void ItemFactory::removeApple()
@@ -270,4 +320,8 @@ void ItemFactory::removeApple()
 	//here we do not need to reset the map grid type, because it will be set later in Snake::resetGridType
 	this->removeChildByTag(eID_Apple);
 	m_pApple = nullptr;
+
+	//reset the time to add the apple
+	//random time from [5, 15] seconds, after the time, an apple appears
+	m_fTimeToAddApple = rand() % 11 + 5.0f;
 }
