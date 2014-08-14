@@ -75,5 +75,8 @@
     <Image Include="..\Resources\models\stone.png">
       <Filter>resource</Filter>
     </Image>
+    <Image Include="..\Resources\models\box2.png">
+      <Filter>resource</Filter>
+    </Image>
   </ItemGroup>
 </Project>

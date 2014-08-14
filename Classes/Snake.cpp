@@ -479,7 +479,7 @@ void Snake::effectDestination(BodyRect* bodyRect)
 		case eType_Apple:
 		{
 			// remove the apple
-			itemFactory->removeApple();
+			itemFactory->eatApple();
 		}
 			break;
 		default:

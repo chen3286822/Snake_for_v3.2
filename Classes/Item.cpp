@@ -95,6 +95,9 @@ bool ItemFactory::initWithMap(SnakeMapLayer* snakeMap)
 	}
 
 	m_pSnakeMap = snakeMap;
+
+	//random time from [5, 15] seconds, after the time, an apple appears
+	m_fTimeToAddApple = rand() % 11 + 5.0f;
 	return true;
 }
 
@@ -151,7 +154,7 @@ void ItemFactory::removeExpiredItem(float dt)
 	if (m_pApple)
 	{
 		if (m_pApple->getDuration() <= 0)
-			removeApple();
+			eatApple();
 		else
 		{
 			m_pApple->setDuration(m_pApple->getDuration() - dt);
@@ -307,12 +310,31 @@ void ItemFactory::addApple(float dt)
 	m_pApple->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*mapIndex);
 	m_pApple->setIndex(mapIndex);
 
+	//add a scale animation
+	m_pApple->setScale(0.1f);
+	auto scaleBig = ScaleTo::create(0.7f, 1.2f);
+	auto scaleBack = ScaleTo::create(0.3f, 1.0f);
+	auto sequence = Sequence::create(scaleBig, scaleBack, nullptr);
+	m_pApple->runAction(sequence);
+
 	//set the grid type
 	m_pSnakeMap->setGridType(mapIndex, eType_Apple);
 
 	//set the duration from [15, 25] seconds
 	auto duration = rand() % 16 + 10.0f;
 	m_pApple->setDuration(duration);
+}
+
+void ItemFactory::eatApple()
+{
+	//stop apple's actions first
+	m_pApple->stopAllActions();
+
+	// zoom out the apple
+	auto scaleSmall = ScaleTo::create(0.5f, 0.1f);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(ItemFactory::removeApple, this));
+	auto sequenceAction = Sequence::create(scaleSmall, doneAction, nullptr);
+	m_pApple->runAction(sequenceAction);
 }
 
 void ItemFactory::removeApple()

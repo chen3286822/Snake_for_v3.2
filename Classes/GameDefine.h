@@ -94,5 +94,6 @@ enum eMoveAction
 #define FoodModel "models/box.c3b"
 #define DoorModel "models/door.c3b"
 #define AppleModel "models/box2.c3b"
+#define BlockModel "models/box2.c3b"
 
 #endif

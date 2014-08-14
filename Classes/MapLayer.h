@@ -6,11 +6,26 @@
 
 #define DEBUG_DRAW
 
-struct Block
+struct Grid
 {
 	cocos2d::Vec2 m_Index;
 	bool m_bOccupied{ false };
 	eType m_eType{ eType_Empty };
+};
+
+class Block : public cocos2d::Node
+{
+public:
+	CREATE_FUNC(Block);
+
+	virtual bool init() override;
+
+	// the map index
+	CC_SYNTHESIZE(cocos2d::Vec2, m_Index, Index);
+
+protected:
+	// the item model
+	cocos2d::Sprite3D* m_pModel{ nullptr };
 };
 
 class BodyRect;
@@ -64,12 +79,16 @@ protected:
 	cocos2d::CustomCommand m_customCommand;
 
 private:
-	Block m_iBlocks[MAPWIDTH][MAPHEIGHT];
+	Grid m_iGrids[MAPWIDTH][MAPHEIGHT];
 
 	Snake* m_pSnake{ nullptr };
 	ItemFactory* m_pItemFactory{ nullptr };
+	std::list<Block*> m_lBlocks;
 
 	cocos2d::EventListenerKeyboard* m_pKeyboardListener{ nullptr };
+
+	//init all the blocks
+	void initBlocks();
 };
 
 #endif // __HELLOWORLD_SCENE_H__

@@ -4,6 +4,18 @@
 #include "Item.h"
 USING_NS_CC;
 
+bool Block::init()
+{
+	if (!Node::init())
+		return false;
+
+	// create block model
+	m_pModel = Sprite3D::create(BlockModel);
+	this->addChild(m_pModel, 1);
+
+	return true;
+}
+
 Scene* SnakeMapLayer::createScene()
 {
     // 'scene' is an autorelease object
@@ -42,8 +54,8 @@ bool SnakeMapLayer::init()
 	{
 		for (int j = 0; j < MAPHEIGHT; j++)
 		{
-			m_iBlocks[i][j].m_Index = Vec2(i, j);
-			m_iBlocks[i][j].m_eType = eType_Empty;
+			m_iGrids[i][j].m_Index = Vec2(i, j);
+			m_iGrids[i][j].m_eType = eType_Empty;
 		}
 	}
 
@@ -62,6 +74,9 @@ bool SnakeMapLayer::init()
 		drawLines->drawSegment(Vec2(0, j*length) + visualRect.origin, Vec2(visualRect.size.width, j*length) + visualRect.origin, 1, Color4F(0.4f, 0.4f, 0.4f, 1));
 	}
 #endif
+
+	//init blocks
+	initBlocks();
 
 	//create the snake
 	m_pSnake = Snake::create(this);
@@ -121,6 +136,20 @@ bool SnakeMapLayer::init()
 // 	}
     
     return true;
+}
+
+void SnakeMapLayer::initBlocks()
+{
+	m_lBlocks.clear();
+
+	auto block = Block::create();
+	this->addChild(block, 2);
+	block->setIndex(Vec2(5, 5));
+	block->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getGridLength() * block->getIndex() + VisibleRect::getHalfGridVec());
+	m_lBlocks.push_back(block);
+
+	//set grid type
+	setGridType(block->getIndex(), eType_Blocked);
 }
 
 void SnakeMapLayer::draw(Renderer* renderer, const Mat4 &transform, uint32_t flags)
@@ -294,32 +323,7 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 void SnakeMapLayer::update(float dt)
 {
 	if (m_pItemFactory)
-		m_pItemFactory->produce(dt);
-// 	if (m_pBox)
-// 	{
-// 		auto pos = m_pBox->getPosition();
-// 		if (pos.x - m_iLastPt.x > 32)
-// 		{
-// 			m_pBox->setPosition(Vec2(pos.x, pos.y + 32));
-// 			m_iLastPt = m_pBox->getPosition();
-// 			log("%f\n", m_fLastTime);
-// 			m_fLastTime = 0;
-// 		}
-// 		else
-// 		{
-// 			auto offset = dt * 40;
-// 			m_pBox->setPosition(Vec2(pos.x + offset, pos.y));
-// 			m_fLastTime += dt;
-// 		}
-//	
-// 		auto vec = m_pBox->getRotation3D();
-// 		auto degreeY = vec.y;
-// 		degreeY += dt * 20;
-// 		if (degreeY > 360)
-// 			degreeY -= 360;
-// 		m_pBox->setRotation3D(Vec3(vec.x, degreeY, vec.z));
-//	}
-	
+		m_pItemFactory->produce(dt);	
 }
 
 void SnakeMapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
@@ -387,7 +391,7 @@ void SnakeMapLayer::setOccupy(Vec2 index, bool bOccupy)
 	if (x < 0 || y < 0 || x >= MAPWIDTH || y >= MAPHEIGHT)
 		return;
 
-	m_iBlocks[x][y].m_bOccupied = bOccupy;
+	m_iGrids[x][y].m_bOccupied = bOccupy;
 }
 
 bool SnakeMapLayer::getOccupy(Vec2 index)
@@ -397,13 +401,13 @@ bool SnakeMapLayer::getOccupy(Vec2 index)
 	if (x < 0 || y < 0 || x >= MAPWIDTH || y >= MAPHEIGHT)
 		return false;
 
-	return m_iBlocks[x][y].m_bOccupied;
+	return m_iGrids[x][y].m_bOccupied;
 }
 
 //modify later
 int SnakeMapLayer::getMovableNumbers()
 {
-	int numbers = MAPWIDTH*MAPHEIGHT;
+	int numbers = MAPWIDTH*MAPHEIGHT - m_lBlocks.size();
 	if (m_pItemFactory)
 		numbers -= m_pItemFactory->getItemsNumber();
 	return numbers;
@@ -416,13 +420,13 @@ void SnakeMapLayer::setGridType(cocos2d::Vec2 index, eType type)
 	if (x < 0 || y < 0 || x >= MAPWIDTH || y >= MAPHEIGHT)
 		return;
 
-	m_iBlocks[x][y].m_eType = type;
+	m_iGrids[x][y].m_eType = type;
 	if (type != eType_None)
 	{
 		if (type == eType_Empty)
-			m_iBlocks[x][y].m_bOccupied = false;
+			m_iGrids[x][y].m_bOccupied = false;
 		else
-			m_iBlocks[x][y].m_bOccupied = true;
+			m_iGrids[x][y].m_bOccupied = true;
 	}
 }
 
@@ -433,7 +437,7 @@ eType SnakeMapLayer::getGridType(cocos2d::Vec2 index)
 	if (x < 0 || y < 0 || x >= MAPWIDTH || y >= MAPHEIGHT)
 		return eType_None;
 
-	return m_iBlocks[x][y].m_eType;
+	return m_iGrids[x][y].m_eType;
 }
 
 Vec2 SnakeMapLayer::getEmptyGridIndex(int index)
@@ -442,7 +446,7 @@ Vec2 SnakeMapLayer::getEmptyGridIndex(int index)
 	int count = 0;
 	for (int i = 0; i < MAPWIDTH*MAPHEIGHT; i++)
 	{
-		if (m_iBlocks[i % MAPWIDTH][i / MAPWIDTH].m_bOccupied == false)
+		if (m_iGrids[i % MAPWIDTH][i / MAPWIDTH].m_bOccupied == false)
 		{
 			count++;
 			if (count == index)

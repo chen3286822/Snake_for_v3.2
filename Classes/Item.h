@@ -106,7 +106,7 @@ public:
 	Door* getDoor(cocos2d::Vec2 index);
 
 	//eat or make the apple disappear
-	void removeApple();
+	void eatApple();
 private:
 	SnakeMapLayer* m_pSnakeMap{ nullptr };
 
@@ -117,6 +117,9 @@ private:
 
 	//remove expired item
 	void removeExpiredItem(float dt);
+
+	//remove apple
+	void removeApple();
 	
 	void addFood();
 	void addDoor();
