@@ -303,8 +303,8 @@ void ItemFactory::addApple(float dt)
 
 	//set the door index
 	int index = (int)(rand() % left + 1);
-	//auto mapIndex = m_pSnakeMap->getEmptyGridIndex(index);
-	Vec2 mapIndex = Vec2(15, 19);
+	auto mapIndex = m_pSnakeMap->getEmptyGridIndex(index);
+	//Vec2 mapIndex = Vec2(15, 19);
 
 	//create apple model
 	m_pApple = Apple::create();

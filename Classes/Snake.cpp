@@ -149,7 +149,7 @@ bool Snake::initWithMap(SnakeMapLayer* snakeMap)
 	m_eLastDir = eDir_Up;
 
 	//init snake speed
-	m_fMoveSpeed = 32.0f;
+	m_fMoveSpeed = 64.0f;
 
 	//set map block type
 	for (auto bodyRect : m_lpBody)
