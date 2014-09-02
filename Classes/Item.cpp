@@ -59,7 +59,7 @@ bool Apple::init()
 	this->addChild(m_pModel, 1);
 
 	m_fDuration = 0.0f;
-
+	m_bValid = true;
 	return true;
 }
 
@@ -69,6 +69,7 @@ void Apple::effect(Snake* snake)
 	if (snake)
 	{
 		snake->setSpeed(snake->getSpeed() + 16.0f);
+		setValid(false);
 	}
 }
 
@@ -302,7 +303,8 @@ void ItemFactory::addApple(float dt)
 
 	//set the door index
 	int index = (int)(rand() % left + 1);
-	auto mapIndex = m_pSnakeMap->getEmptyGridIndex(index);
+	//auto mapIndex = m_pSnakeMap->getEmptyGridIndex(index);
+	Vec2 mapIndex = Vec2(15, 19);
 
 	//create apple model
 	m_pApple = Apple::create();

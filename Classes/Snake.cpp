@@ -465,7 +465,7 @@ void Snake::effectDestination(BodyRect* bodyRect)
 	if (itemFactory)
 	{
 		auto item = itemFactory->getItem(bodyRect->getDestinationIndex());
-		if (item)
+		if (item && item->getValid())
 			item->effect(this);
 
 		switch (m_pSnakeMap->getGridType(bodyRect->getDestinationIndex()))

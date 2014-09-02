@@ -18,6 +18,9 @@ public:
 
 	// duration that the apple exist
 	CC_SYNTHESIZE(float, m_fDuration, Duration);
+
+	// if the item can work any more
+	CC_SYNTHESIZE(bool, m_bValid, Valid);
 protected:
 	// the item model
 	cocos2d::Sprite3D* m_pModel{ nullptr };
