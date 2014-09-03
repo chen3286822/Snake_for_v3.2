@@ -51,18 +51,42 @@ void UserRecord::changeUser(std::string ID)
 
 void UserRecord::loadUserRecord(const std::string& ID)
 {
-	auto userRecordID = "UserRecord" + ID;
-
 	sqlite3 *pdb = NULL;
 	auto path = FileUtils::getInstance()->getWritablePath() + "user.db";
 
+	// open the db, create if not exist
 	int result = sqlite3_open(path.c_str(), &pdb);
 	if (result != SQLITE_OK)
 	{
 		log("open database failed,  number%d", result);
 	}
 
-	auto sql = "";
+	// check if the user table exist
+	std::string sql = "SELECT COUNT(*) FROM sqlite_master where type='table' and name='UserRecord'";
+	char **re; //query result
+	int r, c;// row column
+	sqlite3_get_table(pdb, sql.c_str(), &re, &r, &c, NULL);
+	if (re == nullptr || r == 0)
+	{
+		// create the user table
+		// ID  name   score
+		sql = "create table UserRecord(ID integer primary key autoincrement,name text,score integer)";
+		result = sqlite3_exec(pdb, sql.c_str(), NULL, NULL, NULL);
+		if (result != SQLITE_OK)
+			log("create table failed");
+	}
+
+	// query the data
+	sql = "select * where name='" + ID + "'";
+	sqlite3_get_table(pdb, sql.c_str(), &re, &r, &c, NULL);
+	for (int i = 1; i <= r; i++)
+	{
+		for (int j = 0; j < c; j++)
+		{
+			log("%s", re[i*c + j]);
+		}
+	}
+	sqlite3_free_table(re);
 }
 
 void UserRecord::saveUserRecord(const std::string& ID)
