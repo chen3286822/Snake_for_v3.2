@@ -332,6 +332,9 @@ void ItemFactory::eatApple()
 	//stop apple's actions first
 	m_pApple->stopAllActions();
 
+	// set the apple invalid
+	m_pApple->setValid(false);
+
 	// zoom out the apple
 	auto scaleSmall = ScaleTo::create(0.5f, 0.1f);
 	auto doneAction = CallFunc::create(CC_CALLBACK_0(ItemFactory::removeApple, this));

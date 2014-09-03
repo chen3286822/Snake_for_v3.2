@@ -16,6 +16,9 @@
     <Filter Include="Classes\Element">
       <UniqueIdentifier>{78981b12-0b33-4642-8171-3458709271b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Classes\sqlite3">
+      <UniqueIdentifier>{2b2916d9-40c8-4b3f-a9c4-c6096bf09daf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -39,6 +42,15 @@
     <ClCompile Include="..\Classes\GameDefine.cpp">
       <Filter>Classes\Help</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\UserRecord.cpp">
+      <Filter>Classes\Help</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\sqlite\shell.c">
+      <Filter>Classes\sqlite3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Classes\sqlite\sqlite3.c">
+      <Filter>Classes\sqlite3</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -61,6 +73,15 @@
     </ClInclude>
     <ClInclude Include="..\Classes\Item.h">
       <Filter>Classes\Element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\UserRecord.h">
+      <Filter>Classes\Help</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\sqlite\sqlite3.h">
+      <Filter>Classes\sqlite3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\sqlite\sqlite3ext.h">
+      <Filter>Classes\sqlite3</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

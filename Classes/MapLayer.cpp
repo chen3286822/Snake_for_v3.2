@@ -2,6 +2,7 @@
 #include "VisibleRect.h"
 #include "Snake.h"
 #include "Item.h"
+#include "UserRecord.h"
 USING_NS_CC;
 
 bool Block::init()
@@ -40,6 +41,8 @@ bool SnakeMapLayer::init()
     {
         return false;
     }
+
+	UserRecord::getInstance()->changeUser("1");
 
 	//init the time seed
 	srand((unsigned int)time(NULL));

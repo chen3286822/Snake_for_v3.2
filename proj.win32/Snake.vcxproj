@@ -141,6 +141,9 @@ xcopy /Y /Q "$(EngineRoot)external\websockets\prebuilt\win32\*.*" "$(OutDir)"</C
     <ClCompile Include="..\Classes\Item.cpp" />
     <ClCompile Include="..\Classes\MapLayer.cpp" />
     <ClCompile Include="..\Classes\Snake.cpp" />
+    <ClCompile Include="..\Classes\sqlite\shell.c" />
+    <ClCompile Include="..\Classes\sqlite\sqlite3.c" />
+    <ClCompile Include="..\Classes\UserRecord.cpp" />
     <ClCompile Include="..\Classes\VisibleRect.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -149,6 +152,9 @@ xcopy /Y /Q "$(EngineRoot)external\websockets\prebuilt\win32\*.*" "$(OutDir)"</C
     <ClInclude Include="..\Classes\GameDefine.h" />
     <ClInclude Include="..\Classes\Item.h" />
     <ClInclude Include="..\Classes\MapLayer.h" />
+    <ClInclude Include="..\Classes\sqlite\sqlite3.h" />
+    <ClInclude Include="..\Classes\sqlite\sqlite3ext.h" />
+    <ClInclude Include="..\Classes\UserRecord.h" />
     <ClInclude Include="..\Classes\VisibleRect.h" />
     <ClInclude Include="..\Classes\Snake.h" />
     <ClInclude Include="main.h" />
