@@ -3,6 +3,8 @@
 
 #include "cocos2d.h"
 
+int readUserData(void* pv, int argc, char** argv, char** col);
+
 class UserRecord : public cocos2d::Ref
 {
 public:
@@ -25,6 +27,9 @@ private:
 
 	void loadUserRecord(const std::string& ID);
 	void saveUserRecord(const std::string& ID);
+
+	void setUpDB();
+	bool m_bSetupDone{ false };
 };
 
 #endif // !__USERRECORD_H__

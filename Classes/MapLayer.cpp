@@ -42,7 +42,7 @@ bool SnakeMapLayer::init()
         return false;
     }
 
-	UserRecord::getInstance()->changeUser("1");
+	UserRecord::getInstance()->changeUser("aaa");
 
 	//init the time seed
 	srand((unsigned int)time(NULL));
