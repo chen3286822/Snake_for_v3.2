@@ -1,5 +1,6 @@
 #include "UserRecord.h"
 #include "sqlite/sqlite3.h"
+#include "MapLayer.h"
 
 USING_NS_CC;
 
@@ -33,6 +34,7 @@ UserRecord::~UserRecord()
 bool UserRecord::init()
 {
 	m_strCurID = "";
+	m_nScore = 0;
 
 	setUpDB();
 	return true;
@@ -143,7 +145,7 @@ void UserRecord::saveUserRecord(const std::string& ID)
 
 	//save data
 	char sql[256];
-	sprintf(sql, "replace into UserRecord(name, score) values('%s', %d)", m_strCurID.c_str(), m_nScore);
+	sprintf(sql, "replace into UserRecord(name, score) values('%s', %d)", ID.c_str(), m_nScore);
 	result = sqlite3_exec(pdb, sql, NULL, NULL, NULL);
 	if (result != SQLITE_OK)
 	{
@@ -152,4 +154,34 @@ void UserRecord::saveUserRecord(const std::string& ID)
 		return;
 	}
 	CLOSE_DB(pdb);
+}
+
+void UserRecord::saveData()
+{
+	saveUserRecord(m_strCurID);
+}
+
+// property set get
+void UserRecord::setScore(int var, bool needUpdate)
+{
+	m_nScore = var;
+
+	if (needUpdate)
+	{
+		// inform the UI for the data changing
+		auto scene = Director::getInstance()->getRunningScene();
+		if (scene)
+		{
+			auto layer = dynamic_cast<SnakeMapLayer*>(scene->getChildByTag(eID_SnakeMap));
+			if (layer)
+			{
+				layer->updateUIData(eID_ScoreLabel);
+			}
+		}
+	}
+}
+
+int UserRecord::getScore()
+{
+	return m_nScore;
 }

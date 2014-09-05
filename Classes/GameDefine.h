@@ -19,6 +19,7 @@ eDirection oppositeDirection(eDirection dir);
 
 enum eID
 {
+	eID_All = -1,
 	eID_SnakeMap,
 	eID_Snake,
 	eID_Food,
@@ -26,6 +27,7 @@ enum eID
 	eID_Door2,
 	eID_Apple,
 	eID_ItemFactory,
+	eID_ScoreLabel,
 };
 
 //the grid type

@@ -3,6 +3,7 @@
 #include "MapLayer.h"
 #include "Snake.h"
 #include "VisibleRect.h"
+#include "UserRecord.h"
 
 USING_NS_CC;
 
@@ -68,7 +69,8 @@ void Apple::effect(Snake* snake)
 	// speed up the snake
 	if (snake)
 	{
-		snake->setSpeed(snake->getSpeed() + 16.0f);
+		UserRecord::getInstance()->setScore(UserRecord::getInstance()->getScore() + 100);
+		//snake->setSpeed(snake->getSpeed() + 16.0f);
 		setValid(false);
 	}
 }

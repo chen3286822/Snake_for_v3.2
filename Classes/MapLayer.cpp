@@ -26,7 +26,7 @@ Scene* SnakeMapLayer::createScene()
     auto layer = SnakeMapLayer::create();
 
     // add layer as a child to scene
-    scene->addChild(layer);
+	scene->addChild(layer, 1, eID_SnakeMap);
 
     // return the scene
     return scene;
@@ -42,8 +42,6 @@ bool SnakeMapLayer::init()
         return false;
     }
 
-	UserRecord::getInstance()->changeUser("aaa");
-
 	//init the time seed
 	srand((unsigned int)time(NULL));
 
@@ -51,6 +49,13 @@ bool SnakeMapLayer::init()
 	m_pKeyboardListener = EventListenerKeyboard::create();
 	m_pKeyboardListener->onKeyReleased = CC_CALLBACK_2(SnakeMapLayer::onKeyReleased, this);
 	_eventDispatcher->addEventListenerWithSceneGraphPriority(m_pKeyboardListener, this);
+
+	// score viewer
+	TTFConfig labelConfig("fonts/msyh.ttf", 16);
+	auto scoreLabel = Label::createWithTTF(labelConfig, "Score: 0", TextHAlignment::CENTER);
+	scoreLabel->setPosition(VisibleRect::rightBottom());
+	scoreLabel->setAnchorPoint(Vec2(1, 0));
+	this->addChild(scoreLabel, 3, eID_ScoreLabel);
 
 	//init blocks
 	for (int i = 0; i < MAPWIDTH; i++)
@@ -95,27 +100,6 @@ bool SnakeMapLayer::init()
 	//the snake crawl
 	m_pSnake->crawl();
 
-	//m_pBox = Sprite3D::create(SnakeBodyModel);
-	//m_pBox->setAnchorPoint(Vec2(0, 0));	//not work for 3D sprite
-	//m_pBox->setScale(3);
-	//m_pBox->setRotation3D(Vec3(60, 60, 0));
-	//this->addChild(m_pBox,2);
-	//m_pBox->setPosition(Vec2(visibleSize.width/2 + 16 +  (-5)*32 + origin.x, visibleSize.height/2 + 16 + (-5)*32+ origin.y));
-	//m_iLastPt = m_pBox->getPosition(); 
-	//m_pBox->ignoreAnchorPointForPosition(true);
-	//m_pBox->setContentSize(Size(VisibleRect::getGridLength(), VisibleRect::getGridLength()));
-	//m_pBox->setAnchorPoint(Vec2(0.5,0.5));
-	//log("%f, %f",m_pBox->getPositionX(),m_pBox->getPositionY());
-// 	auto rotateAction = RotateBy::create(2.5, Vec3(0,0,90));
-// 	auto doneAction = CallFunc::create(CC_CALLBACK_0(SnakeMapLayer::getPos, this, m_pBox));
-// 	auto rotateAction2 = RotateBy::create(2.5, Vec3(0, 0, 90));
-// 	auto moveAction = MoveBy::create(2.5, Vec2(VisibleRect::getGridLength(),0));
-// 	auto moveAction2 = MoveTo::create(2.5, m_pBox->getPosition() + Vec2(32,0));
-// 	auto sequenceAction = Sequence::create(rotateAction, doneAction, NULL);
-// 	auto spawnAction = Spawn::create(rotateAction,moveAction,NULL);
-//	m_pBox->runAction(spawnAction);
-
-
 
 // 	auto animation = Animation3D::create(fileName);
 // 	if (animation)
@@ -137,6 +121,9 @@ bool SnakeMapLayer::init()
 // 
 // 		sprite->runAction(RepeatForever::create(animate));
 // 	}
+
+	// load user's data
+	UserRecord::getInstance()->changeUser("aaa");
     
     return true;
 }
@@ -169,32 +156,34 @@ void SnakeMapLayer::onDraw(const Mat4& transform, uint32_t flags)
 	director->loadMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW, transform);
 
 #ifdef DEBUG_DRAW
-// 	glLineWidth(1);
-// 	
-// 	for (int i = 0; i < MAPWIDTH; ++i)
-// 	{
-// 		for (int j = 0; j < MAPHEIGHT; ++j)
-// 		{
-// 			auto color = Color4F::BLACK;
-// 			auto type = getGridType(Vec2(i, j));
-// 			if (type == eType_Snake)
-// 				color = Color4F(0.5f, 0.5f, 1, 0.8f);
-// 			else if (type == eType_Food)
-// 				color = Color4F(1, 0, 0, 0.8f);
-// 
-// 			if (color != Color4F::BLACK)
-// 			{
-// 				auto x = VisibleRect::getGridLength() * i + VisibleRect::getVisibleRect().origin.x;
-// 				auto y = VisibleRect::getGridLength() * j + VisibleRect::getVisibleRect().origin.y;
-// 				auto x1 = x + VisibleRect::getGridLength();
-// 				auto y1 = y + VisibleRect::getGridLength();
-// 				Vec2 filledVertices[] = { Vec2(x,y), Vec2(x1, y), Vec2(x1, y1), Vec2(x, y1) };
-// 				DrawPrimitives::drawSolidPoly(filledVertices, 4, color);
-// 
-// 				CHECK_GL_ERROR_DEBUG();
-// 			}
-// 		}
-// 	}
+	glLineWidth(1);
+
+	for (int i = 0; i < MAPWIDTH; ++i)
+	{
+		for (int j = 0; j < MAPHEIGHT; ++j)
+		{
+			auto color = Color4F::BLACK;
+			auto type = getGridType(Vec2(i, j));
+			if (type == eType_Snake)
+				color = Color4F(0.5f, 0.5f, 1, 0.8f);
+			else if (type == eType_Food)
+				color = Color4F(0, 1, 0, 0.8f);
+			else if (type == eType_Apple)
+				color = Color4F(1, 0, 0, 0.8f);
+
+			if (color != Color4F::BLACK)
+			{
+				auto x = VisibleRect::getGridLength() * i + VisibleRect::getVisibleRect().origin.x;
+				auto y = VisibleRect::getGridLength() * j + VisibleRect::getVisibleRect().origin.y;
+				auto x1 = x + VisibleRect::getGridLength();
+				auto y1 = y + VisibleRect::getGridLength();
+				Vec2 filledVertices[] = { Vec2(x, y), Vec2(x1, y), Vec2(x1, y1), Vec2(x, y1) };
+				DrawPrimitives::drawSolidPoly(filledVertices, 4, color);
+
+				CHECK_GL_ERROR_DEBUG();
+			}
+		}
+	}
 #endif
 
 	//end draw
@@ -469,4 +458,38 @@ bool SnakeMapLayer::isInDoor(cocos2d::Vec2 index)
 		return true;
 
 	return false;
+}
+
+void SnakeMapLayer::updateUIData(int label)
+{
+	bool IsAll = (label == eID_All ? true : false);
+	std::vector<int> vIDs;
+	if (IsAll)
+	{
+		// push all the UI ID that need to be updated
+		vIDs.push_back(eID_ScoreLabel);
+	}
+	else
+		vIDs.push_back(label);
+
+	for (auto id : vIDs)
+	{
+		switch (id)
+		{
+		case eID_ScoreLabel:
+		{
+							   auto scoreLabel = dynamic_cast<Label*>(getChildByTag(eID_ScoreLabel));
+							   if (scoreLabel)
+							   {
+								   char temp[256];
+								   sprintf(temp, "Score: %d", UserRecord::getInstance()->getScore());
+								   scoreLabel->setString(temp);
+							   }
+		}
+			break;
+		default:
+			break;
+		}
+	}
+
 }

@@ -73,6 +73,9 @@ public:
 
 	//check if the body rect stays in the out door
 	bool isInDoor(cocos2d::Vec2 index);
+
+	// update UI data, label = eID_All means all the UI data should be updated
+	void updateUIData(int label = eID_All);
 protected:
 	//for debugging
 	void onDraw(const cocos2d::Mat4& transform, uint32_t flags);

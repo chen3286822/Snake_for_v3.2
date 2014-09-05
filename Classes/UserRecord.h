@@ -21,7 +21,11 @@ public:
 	CC_SYNTHESIZE(std::string, m_strCurID, curUserID);
 
 	//score
-	CC_SYNTHESIZE(int, m_nScore, Score);
+	void setScore(int var, bool needUpdate = true);
+	int getScore();
+
+	// save data
+	void saveData();
 private:
 	static UserRecord* m_sUserRecord;
 
@@ -30,6 +34,8 @@ private:
 
 	void setUpDB();
 	bool m_bSetupDone{ false };
+
+	int m_nScore;
 };
 
 #endif // !__USERRECORD_H__
