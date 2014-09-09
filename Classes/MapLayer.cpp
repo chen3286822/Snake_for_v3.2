@@ -19,28 +19,28 @@ bool Block::init()
 
 Scene* SnakeMapLayer::createScene()
 {
-    // 'scene' is an autorelease object
-    auto scene = Scene::create();
-    
-    // 'layer' is an autorelease object
-    auto layer = SnakeMapLayer::create();
+	// 'scene' is an autorelease object
+	auto scene = Scene::create();
 
-    // add layer as a child to scene
+	// 'layer' is an autorelease object
+	auto layer = SnakeMapLayer::create();
+
+	// add layer as a child to scene
 	scene->addChild(layer, 1, eID_SnakeMap);
 
-    // return the scene
-    return scene;
+	// return the scene
+	return scene;
 }
 
 // on "init" you need to initialize your instance
 bool SnakeMapLayer::init()
 {
-    //////////////////////////////
-    // 1. super init first
-    if ( !Layer::init() )
-    {
-        return false;
-    }
+	//////////////////////////////
+	// 1. super init first
+	if (!Layer::init())
+	{
+		return false;
+	}
 
 	//init the time seed
 	srand((unsigned int)time(NULL));
@@ -89,7 +89,7 @@ bool SnakeMapLayer::init()
 	//create the snake
 	m_pSnake = Snake::create(this);
 	this->addChild(m_pSnake, 2, eID_Snake);
-	
+
 	//create the items factory
 	m_pItemFactory = ItemFactory::create(this);
 	this->addChild(m_pItemFactory, 2, eID_ItemFactory);
@@ -101,31 +101,31 @@ bool SnakeMapLayer::init()
 	m_pSnake->crawl();
 
 
-// 	auto animation = Animation3D::create(fileName);
-// 	if (animation)
-// 	{
-// 		auto animate = Animate3D::create(animation);
-// 		bool inverse = (std::rand() % 3 == 0);
-// 
-// 		int rand2 = std::rand();
-// 		float speed = 1.0f;
-// 		if (rand2 % 3 == 1)
-// 		{
-// 			speed = animate->getSpeed() + CCRANDOM_0_1();
-// 		}
-// 		else if (rand2 % 3 == 2)
-// 		{
-// 			speed = animate->getSpeed() - 0.5 * CCRANDOM_0_1();
-// 		}
-// 		animate->setSpeed(inverse ? -speed : speed);
-// 
-// 		sprite->runAction(RepeatForever::create(animate));
-// 	}
+	// 	auto animation = Animation3D::create(fileName);
+	// 	if (animation)
+	// 	{
+	// 		auto animate = Animate3D::create(animation);
+	// 		bool inverse = (std::rand() % 3 == 0);
+	// 
+	// 		int rand2 = std::rand();
+	// 		float speed = 1.0f;
+	// 		if (rand2 % 3 == 1)
+	// 		{
+	// 			speed = animate->getSpeed() + CCRANDOM_0_1();
+	// 		}
+	// 		else if (rand2 % 3 == 2)
+	// 		{
+	// 			speed = animate->getSpeed() - 0.5 * CCRANDOM_0_1();
+	// 		}
+	// 		animate->setSpeed(inverse ? -speed : speed);
+	// 
+	// 		sprite->runAction(RepeatForever::create(animate));
+	// 	}
 
 	// load user's data
 	UserRecord::getInstance()->changeUser("aaa");
-    
-    return true;
+
+	return true;
 }
 
 void SnakeMapLayer::initBlocks()
@@ -258,53 +258,53 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 
 		bodyRect->setCrossing(true);
 	}
-	
+
 	//get the destination grid type
 	auto type = getGridType(realIndex);
 	switch (type)
 	{
 	case eType_Door:
 	{
-					   //check if the direction is right to the door
-					   auto door = m_pItemFactory->getDoor(realIndex);
-					   if (door)
-					   {
-						   //cross the door
-						   if (bodyRect->getCurDirection() == door->getTransferDirection())
-						   {
-							   moveType = eMoveType_Transfer;
-							   //the destination is close to the other door
-							   auto otherDoor = door->getOtherDoor();
-							   if (otherDoor)
-							   {
-								   auto outDirection = oppositeDirection(otherDoor->getTransferDirection());
-								   //just stop in the out door, and the direction cannot be changed until the body rect move out of the door througn the transfer direction
-								   realIndex = otherDoor->getIndex();
-								   bodyRect->setTransferDirection(outDirection);
-							   }
-						   }
-						   else
-						   {
-							   //like hit the wall
-							   moveType = eMoveType_Dead;
-						   }
-					   }
-					   else
-					   {
-						   //wrong branch
-					   }
+		//check if the direction is right to the door
+		auto door = m_pItemFactory->getDoor(realIndex);
+		if (door)
+		{
+			//cross the door
+			if (bodyRect->getCurDirection() == door->getTransferDirection())
+			{
+				moveType = eMoveType_Transfer;
+				//the destination is close to the other door
+				auto otherDoor = door->getOtherDoor();
+				if (otherDoor)
+				{
+					auto outDirection = oppositeDirection(otherDoor->getTransferDirection());
+					//just stop in the out door, and the direction cannot be changed until the body rect move out of the door througn the transfer direction
+					realIndex = otherDoor->getIndex();
+					bodyRect->setTransferDirection(outDirection);
+				}
+			}
+			else
+			{
+				//like hit the wall
+				moveType = eMoveType_Dead;
+			}
+		}
+		else
+		{
+			//wrong branch
+		}
 	}
 		break;
 	case eType_Food:
 	{
-					   moveType = eMoveType_Eat;
+		moveType = eMoveType_Eat;
 	}
 		break;
 	case eType_Blocked:
 	case eType_Snake:
 	case eType_Dead:
 	{
-					   moveType = eMoveType_Dead;
+		moveType = eMoveType_Dead;
 	}
 		break;
 	}
@@ -317,7 +317,7 @@ void SnakeMapLayer::setDestinationOfBodyRect(BodyRect* bodyRect)
 void SnakeMapLayer::update(float dt)
 {
 	if (m_pItemFactory)
-		m_pItemFactory->produce(dt);	
+		m_pItemFactory->produce(dt);
 }
 
 void SnakeMapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
@@ -480,13 +480,13 @@ void SnakeMapLayer::updateUIData(int label)
 		{
 		case eID_ScoreLabel:
 		{
-							   auto scoreLabel = dynamic_cast<Label*>(getChildByTag(eID_ScoreLabel));
-							   if (scoreLabel)
-							   {
-								   char temp[256];
-								   sprintf(temp, "Score: %d", UserRecord::getInstance()->getScore());
-								   scoreLabel->setString(temp);
-							   }
+			auto scoreLabel = dynamic_cast<Label*>(getChildByTag(eID_ScoreLabel));
+			if (scoreLabel)
+			{
+				char temp[256];
+				sprintf(temp, "Score: %d", UserRecord::getInstance()->getScore());
+				scoreLabel->setString(temp);
+			}
 		}
 			break;
 		default:

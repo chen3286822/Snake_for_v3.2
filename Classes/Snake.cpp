@@ -129,13 +129,13 @@ bool Snake::initWithMap(SnakeMapLayer* snakeMap)
 	m_pHead = BodyRect::create(SnakeHeadModel);
 	this->addChild(m_pHead, 1);
 	m_lpBody.push_back(m_pHead);
-	m_pHead->setPosition(VisibleRect::center() + Vec2(gridLength / 2, gridLength/2));
+	m_pHead->setPosition(VisibleRect::center() + Vec2(gridLength / 2, gridLength / 2));
 	m_pHead->setMapIndex((m_pHead->getPosition() - visualRect.origin - VisibleRect::getHalfGridVec()) / gridLength);
 
 	auto body = BodyRect::create(SnakeBodyModel);
 	this->addChild(body, 1);
 	m_lpBody.push_back(body);
-	body->setPosition(m_pHead->getPosition() + Vec2(0,-gridLength));
+	body->setPosition(m_pHead->getPosition() + Vec2(0, -gridLength));
 	body->setMapIndex(m_pHead->getMapIndex() + Vec2(0, -1));
 
 	m_pTail = BodyRect::create(SnakeTailModel);
@@ -497,37 +497,37 @@ bool Snake::setAction(BodyRect* bodyRect)
 	{
 	case eMoveType_None:
 	{
-						   moveToDes();
+		moveToDes();
 	}
 		break;
 	case eMoveType_Eat:
 	{
-						  //only the head rect will run here
-						  //a new rect will be 'born' in the head's position
-						  m_pToAdd = BodyRect::create(SnakeBodyModel);
-						  this->addChild(m_pToAdd, 1);
-						  m_pToAdd->setPosition(bodyRect->getPosition());
-						  m_pToAdd->setMapIndex(bodyRect->getMapIndex());
-						  m_pToAdd->setDestinationIndex(bodyRect->getMapIndex());
-						  m_pToAdd->setCurDirection(bodyRect->getCurDirection());
-						  //rotate the rect to fit the snake
-						  auto dir = bodyRect->getCurDirection();
-						  m_pToAdd->setRotation(arcByDirection(dir));
+		//only the head rect will run here
+		//a new rect will be 'born' in the head's position
+		m_pToAdd = BodyRect::create(SnakeBodyModel);
+		this->addChild(m_pToAdd, 1);
+		m_pToAdd->setPosition(bodyRect->getPosition());
+		m_pToAdd->setMapIndex(bodyRect->getMapIndex());
+		m_pToAdd->setDestinationIndex(bodyRect->getMapIndex());
+		m_pToAdd->setCurDirection(bodyRect->getCurDirection());
+		//rotate the rect to fit the snake
+		auto dir = bodyRect->getCurDirection();
+		m_pToAdd->setRotation(arcByDirection(dir));
 
-						  setAppearAction(m_pToAdd);
+		setAppearAction(m_pToAdd);
 
-						  //then the head will move to the destination.
-						  moveToDes();
+		//then the head will move to the destination.
+		moveToDes();
 	}
 		return false;
 	case eMoveType_Transfer:
 	{
-							   moveScaleOneGrid(bodyRect);
+		moveScaleOneGrid(bodyRect);
 	}
 		break;
 	case eMoveType_Dead:
 	{
-						   m_pSnakeMap->die();
+		m_pSnakeMap->die();
 	}
 		return false;
 	}
@@ -548,20 +548,20 @@ void Snake::effectDestination(BodyRect* bodyRect)
 		{
 		case eType_Food:
 		{
-						   //eat the food
-						   itemFactory->eatFood();
+			//eat the food
+			itemFactory->eatFood();
 		}
 			break;
 		case eType_Apple:
 		{
-							// remove the apple
-							itemFactory->eatApple();
+			// remove the apple
+			itemFactory->eatApple();
 		}
 			break;
 		case eType_Star:
 		{
-						   // remove the star
-						   itemFactory->eatStar();
+			// remove the star
+			itemFactory->eatStar();
 		}
 			break;
 		default:
