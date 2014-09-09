@@ -118,6 +118,9 @@ bool Snake::initWithMap(SnakeMapLayer* snakeMap)
 	//the m_pSnakeMap should never be null or invalid if the snake exist
 	m_pSnakeMap = snakeMap;
 	m_lpBody.clear();
+	m_mStates.clear();
+
+	scheduleUpdate();
 
 	auto visualRect = VisibleRect::getVisibleRect();
 	auto gridLength = VisibleRect::getGridLength();
@@ -158,6 +161,79 @@ bool Snake::initWithMap(SnakeMapLayer* snakeMap)
 		m_pSnakeMap->setGridType(index, eType_Snake);
 	}
 	return true;
+}
+
+void Snake::update(float delta)
+{
+	for (auto state : m_mStates)
+	{
+		if (state.first != eFiniteState_None)
+		{
+			if (state.second.m_fLeftTime > 0)
+			{
+				state.second.m_fLeftTime -= delta;
+			}
+			else
+			{
+				state.second.m_fLeftTime = 0;
+				switch (state.first)
+				{
+				case eFiniteState_Speed:
+					m_fMoveSpeed -= state.second.m_fVar;
+					break;
+				case eFiniteState_Score:
+					m_fStateScoreRate -= state.second.m_fVar;
+					break;
+				}
+			}
+		}
+	}
+	//remove all the invalid states
+	for (std::map<int, FiniteState>::iterator mit = m_mStates.begin(); mit != m_mStates.end();)
+	{
+		if (mit->second.m_fLeftTime == 0)
+			m_mStates.erase(mit);
+		else
+			mit++;
+	}
+}
+
+void Snake::addState(FiniteState state)
+{
+	if (state.m_nType == eFiniteState_None || state.m_fLeftTime <= 0)
+		return;
+
+	std::map<int, FiniteState>::iterator mit = m_mStates.find(state.m_nType);
+	if (mit != m_mStates.end())
+	{
+		// reset the time
+		if (state.m_fLeftTime > mit->second.m_fLeftTime)
+			mit->second.m_fLeftTime = state.m_fLeftTime;
+	}
+	else
+	{
+		//insert the state
+		m_mStates[state.m_nType] = state;
+		//modify some values
+		switch (state.m_nType)
+		{
+		case eFiniteState_Speed:
+			m_fMoveSpeed += state.m_fVar;
+			break;
+		case eFiniteState_Score:
+			m_fStateScoreRate += state.m_fVar;
+			break;
+		}
+	}
+}
+
+void Snake::addState(eFiniteState state, float var, float time)
+{
+	FiniteState finiteState;
+	finiteState.m_nType = state;
+	finiteState.m_fVar = var;
+	finiteState.m_fLeftTime = time;
+	addState(finiteState);
 }
 
 void Snake::pauseAll()
@@ -472,14 +548,20 @@ void Snake::effectDestination(BodyRect* bodyRect)
 		{
 		case eType_Food:
 		{
-			//eat the food
-			itemFactory->eatFood();
+						   //eat the food
+						   itemFactory->eatFood();
 		}
 			break;
 		case eType_Apple:
 		{
-			// remove the apple
-			itemFactory->eatApple();
+							// remove the apple
+							itemFactory->eatApple();
+		}
+			break;
+		case eType_Star:
+		{
+						   // remove the star
+						   itemFactory->eatStar();
 		}
 			break;
 		default:

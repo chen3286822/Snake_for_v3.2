@@ -26,6 +26,7 @@ enum eID
 	eID_Door1,
 	eID_Door2,
 	eID_Apple,
+	eID_Star,
 	eID_ItemFactory,
 	eID_ScoreLabel,
 };
@@ -87,6 +88,26 @@ enum eMoveAction
 	eMoveAction_Turn,
 };
 
+enum eFiniteState
+{
+	eFiniteState_None,
+	eFiniteState_Speed,
+	eFiniteState_Score,
+};
+
+struct FiniteState
+{
+	FiniteState()
+	{
+		m_nType = eFiniteState_None;
+		m_fVar = 0;
+		m_fLeftTime = 0;
+	}
+	eFiniteState m_nType;
+	float m_fVar;
+	float m_fLeftTime;
+};
+
 #define MAPWIDTH 30
 #define MAPHEIGHT 20
 
@@ -96,6 +117,7 @@ enum eMoveAction
 #define FoodModel "models/box.c3b"
 #define DoorModel "models/door.c3b"
 #define AppleModel "models/box2.c3b"
+#define StarModel "models/box2.c3b"
 #define BlockModel "models/box2.c3b"
 
 #endif

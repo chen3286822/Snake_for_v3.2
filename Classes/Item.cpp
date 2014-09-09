@@ -55,7 +55,6 @@ bool Apple::init()
 		return false;
 	}
 
-	//set  the food model
 	m_pModel = Sprite3D::create(AppleModel);
 	this->addChild(m_pModel, 1);
 
@@ -66,11 +65,36 @@ bool Apple::init()
 
 void Apple::effect(Snake* snake)
 {
-	// speed up the snake
 	if (snake)
 	{
-		UserRecord::getInstance()->setScore(UserRecord::getInstance()->getScore() + 100);
-		//snake->setSpeed(snake->getSpeed() + 16.0f);
+		UserRecord::getInstance()->addScore(m_nBasicScore * snake->getScoreRate());
+		setValid(false);
+	}
+}
+
+bool Star::init()
+{
+	if (!Node::init())
+	{
+		return false;
+	}
+
+	m_pModel = Sprite3D::create(StarModel);
+	this->addChild(m_pModel, 1);
+
+	m_fDuration = 0.0f;
+	m_bValid = true;
+	return true;
+}
+
+void Star::effect(Snake* snake)
+{	
+	if (snake)
+	{
+		// speed up the snake
+		snake->setSpeed(snake->getSpeed() + 16.0f);
+		// set the score rate
+		snake->addState(eFiniteState_Score, 1.0f, 30.0f);
 		setValid(false);
 	}
 }
@@ -119,6 +143,8 @@ Item* ItemFactory::getItem(cocos2d::Vec2 index)
 		return m_pDoors.second;
 	else if (m_pApple && m_pApple->getIndex() == index)
 		return m_pApple;
+	else if (m_pStar && m_pStar->getIndex() == index)
+		return m_pStar;
 
 	return nullptr;
 }
@@ -132,6 +158,8 @@ int ItemFactory::getItemsNumber()
 		number += 2;
 	if (m_pApple)
 		number++;
+	if (m_pStar)
+		number++;
 
 	return number;
 }
@@ -144,8 +172,11 @@ void ItemFactory::produce(float dt)
 	//add the transfer doors
 	addDoor();
 
-	//add the speed apple
+	//add the score apple
 	addApple(dt);
+
+	//add the speed star
+	addStar(dt);
 
 	//check and remove expired item
 	removeExpiredItem(dt);
@@ -162,6 +193,13 @@ void ItemFactory::removeExpiredItem(float dt)
 		{
 			m_pApple->setDuration(m_pApple->getDuration() - dt);
 		}
+	}
+	if (m_pStar)
+	{
+		if (m_pStar->getDuration() <= 0)
+			eatStar();
+		else
+			m_pStar->setDuration(m_pStar->getDuration() - dt);
 	}
 }
 
@@ -303,10 +341,9 @@ void ItemFactory::addApple(float dt)
 	if (left <= 0)
 		return;
 
-	//set the door index
+	//set the apple index
 	int index = (int)(rand() % left + 1);
 	auto mapIndex = m_pSnakeMap->getEmptyGridIndex(index);
-	//Vec2 mapIndex = Vec2(15, 19);
 
 	//create apple model
 	m_pApple = Apple::create();
@@ -353,4 +390,78 @@ void ItemFactory::removeApple()
 	//reset the time to add the apple
 	//random time from [5, 15] seconds, after the time, an apple appears
 	m_fTimeToAddApple = rand() % 11 + 5.0f;
+}
+
+void ItemFactory::addStar(float dt)
+{
+	//check if the star exist
+	if (m_pStar)
+		return;
+
+	//check if the random time has finished
+	if (m_fTimeToAddStar > 0)
+	{
+		m_fTimeToAddStar -= dt;
+		return;
+	}
+
+	// it's time to add star, check the empty grid
+	Snake* snake = m_pSnakeMap->getSnake();
+	if (!snake)
+		return;
+	int left = m_pSnakeMap->getMovableNumbers() - snake->getLength();
+
+	//no empty grids left
+	if (left <= 0)
+		return;
+
+	//set the star index
+	int index = (int)(rand() % left + 1);
+	auto mapIndex = m_pSnakeMap->getEmptyGridIndex(index);
+
+	//create star model
+	m_pStar = Star::create();
+	this->addChild(m_pStar, 1, eID_Star);
+	m_pStar->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*mapIndex);
+	m_pStar->setIndex(mapIndex);
+
+	//add a scale animation
+	m_pStar->setScale(0.1f);
+	auto scaleBig = ScaleTo::create(0.7f, 1.2f);
+	auto scaleBack = ScaleTo::create(0.3f, 1.0f);
+	auto sequence = Sequence::create(scaleBig, scaleBack, nullptr);
+	m_pStar->runAction(sequence);
+
+	//set the grid type
+	m_pSnakeMap->setGridType(mapIndex, eType_Star);
+
+	//set the duration from [15, 25] seconds
+	auto duration = rand() % 16 + 10.0f;
+	m_pStar->setDuration(duration);
+}
+
+void ItemFactory::eatStar()
+{
+	//stop star's actions first
+	m_pStar->stopAllActions();
+
+	// set the star invalid
+	m_pStar->setValid(false);
+
+	// zoom out the star
+	auto scaleSmall = ScaleTo::create(0.5f, 0.1f);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(ItemFactory::removeStar, this));
+	auto sequenceAction = Sequence::create(scaleSmall, doneAction, nullptr);
+	m_pStar->runAction(sequenceAction);
+}
+
+void ItemFactory::removeStar()
+{
+	//here we do not need to reset the map grid type, because it will be set later in Snake::resetGridType
+	this->removeChildByTag(eID_Star);
+	m_pStar = nullptr;
+
+	//reset the time to add the star
+	//random time from [5, 15] seconds, after the time, a star appears
+	m_fTimeToAddStar = rand() % 11 + 5.0f;
 }

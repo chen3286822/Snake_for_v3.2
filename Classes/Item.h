@@ -60,6 +60,8 @@ public:
 
 	virtual bool init() override;
 	virtual void effect(Snake* snake) override;
+private:
+	const int m_nBasicScore{ 100 };
 };
 
 // speed star, snake eat it will speed up and gain the score obtained
@@ -110,23 +112,32 @@ public:
 
 	//eat or make the apple disappear
 	void eatApple();
+
+	//eat or make the star disappear
+	void eatStar();
 private:
 	SnakeMapLayer* m_pSnakeMap{ nullptr };
 
 	Food* m_pFood{ nullptr };
 	std::pair<Door*, Door*> m_pDoors;
 	Apple* m_pApple{ nullptr };
+	Star* m_pStar{ nullptr };
 	float m_fTimeToAddApple{ 0 };
+	float m_fTimeToAddStar{ 0 };
 
 	//remove expired item
 	void removeExpiredItem(float dt);
 
 	//remove apple
 	void removeApple();
+	//remove star
+	void removeStar();
 	
 	void addFood();
 	void addDoor();
 	// apple exist in finite time
 	void addApple(float dt);
+	// star exist in finite time
+	void addStar(float dt);
 };
 #endif

@@ -162,6 +162,12 @@ void UserRecord::saveData()
 }
 
 // property set get
+void UserRecord::addScore(int var)
+{
+	int tmp = var + m_nScore;
+	setScore(tmp);
+}
+
 void UserRecord::setScore(int var, bool needUpdate)
 {
 	m_nScore = var;

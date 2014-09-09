@@ -55,6 +55,7 @@ class Snake : public cocos2d::Node
 public:
 	static Snake* create(SnakeMapLayer* snakeMap);
 	bool initWithMap(SnakeMapLayer* snakeMap);
+	virtual void update(float delta) override;
 
 	//pause all its body rects' actions and its own
 	void pauseAll();
@@ -75,6 +76,12 @@ public:
 	//the number of body rect, include head and tail
 	int getLength();
 
+	//score rate parameter, some items will change this
+	float getScoreRate(){ return m_fStateScoreRate; }
+
+	//add state
+	void addState(FiniteState state);
+	void addState(eFiniteState state, float var, float time);
 private:
 	SnakeMapLayer* m_pSnakeMap{ nullptr };
 	BodyRect* m_pHead{ nullptr };
@@ -91,7 +98,13 @@ private:
 	eDirection m_eLastDir{ eDir_None };	
 
 	//next direction set by player
-	eDirection m_eNextDirection{ eDir_None };	
+	eDirection m_eNextDirection{ eDir_None };
+
+	//score rate parameter changed by state
+	float m_fStateScoreRate{ 1.0f };
+
+	//store all the state
+	std::map<int, FiniteState> m_mStates;
 
 	//according to the m_eNextDirection value is set or not, decide next direction
 	void setNextDirection(BodyRect* bodyRect);

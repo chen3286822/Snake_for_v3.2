@@ -21,6 +21,7 @@ public:
 	CC_SYNTHESIZE(std::string, m_strCurID, curUserID);
 
 	//score
+	void addScore(int var);
 	void setScore(int var, bool needUpdate = true);
 	int getScore();
 
