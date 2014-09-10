@@ -57,6 +57,18 @@ bool SnakeMapLayer::init()
 	scoreLabel->setAnchorPoint(Vec2(1, 0));
 	this->addChild(scoreLabel, 3, eID_ScoreLabel);
 
+#ifdef DEBUG_DRAW
+	auto speedLabel = Label::createWithTTF(labelConfig, "Speed: 0", TextHAlignment::CENTER);
+	speedLabel->setPosition(VisibleRect::rightBottom() + Vec2(0, 20));
+	speedLabel->setAnchorPoint(Vec2(1, 0));
+	this->addChild(speedLabel, 3, eID_SpeedLabel);
+
+	auto scoreRateLabel = Label::createWithTTF(labelConfig, "ScoreRate: 0", TextHAlignment::CENTER);
+	scoreRateLabel->setPosition(VisibleRect::rightBottom() + Vec2(0, 40));
+	scoreRateLabel->setAnchorPoint(Vec2(1, 0));
+	this->addChild(scoreRateLabel, 3, eID_ScoreRateLabel);
+#endif
+
 	//init blocks
 	for (int i = 0; i < MAPWIDTH; i++)
 	{
@@ -187,6 +199,21 @@ void SnakeMapLayer::onDraw(const Mat4& transform, uint32_t flags)
 				CHECK_GL_ERROR_DEBUG();
 			}
 		}
+	}
+
+	//update the debug label content
+	char tmp[50];
+	auto speedLabel = dynamic_cast<Label*>(getChildByTag(eID_SpeedLabel));
+	if (speedLabel)
+	{
+		sprintf(tmp, "Speed: %f", m_pSnake->getSpeed());
+		speedLabel->setString(tmp);
+	}
+	auto scoreRateLabel = dynamic_cast<Label*>(getChildByTag(eID_ScoreRateLabel));
+	if (scoreRateLabel)
+	{
+		sprintf(tmp, "ScoreRate: %f", m_pSnake->getScoreRate());
+		scoreRateLabel->setString(tmp);
 	}
 #endif
 

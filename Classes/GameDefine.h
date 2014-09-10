@@ -30,6 +30,9 @@ enum eID
 	eID_Ball,
 	eID_ItemFactory,
 	eID_ScoreLabel,
+	//debug
+	eID_SpeedLabel,
+	eID_ScoreRateLabel,
 };
 
 //the grid type
