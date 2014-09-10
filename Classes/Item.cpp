@@ -88,7 +88,7 @@ bool Star::init()
 }
 
 void Star::effect(Snake* snake)
-{	
+{
 	if (snake)
 	{
 		// speed up the snake
