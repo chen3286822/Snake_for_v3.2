@@ -104,9 +104,6 @@ public:
 	//remove the food
 	void eatFood();
 
-	//remove the door
-	void removeDoor();
-
 	//get the door
 	Door* getDoor(cocos2d::Vec2 index);
 
@@ -115,6 +112,9 @@ public:
 
 	//eat or make the star disappear
 	void eatStar();
+
+	//eat or make the ball disappear
+	void eatBall();
 private:
 	SnakeMapLayer* m_pSnakeMap{ nullptr };
 
@@ -122,16 +122,25 @@ private:
 	std::pair<Door*, Door*> m_pDoors;
 	Apple* m_pApple{ nullptr };
 	Star* m_pStar{ nullptr };
+	Ball* m_pBall{ nullptr };
 	float m_fTimeToAddApple{ 0 };
 	float m_fTimeToAddStar{ 0 };
+	float m_fTimeToAddBall{ 0 };
+	bool m_bRemovingApple{ false };
+	bool m_bRemovingStar{ false };
+	bool m_bRemovingBall{ false };
 
 	//remove expired item
 	void removeExpiredItem(float dt);
 
 	//remove apple
 	void removeApple();
+	//remove the door
+	void removeDoor();
 	//remove star
 	void removeStar();
+	//remove ball
+	void removeBall();
 	
 	void addFood();
 	void addDoor();
@@ -139,5 +148,7 @@ private:
 	void addApple(float dt);
 	// star exist in finite time
 	void addStar(float dt);
+	// ball exist in finite time
+	void addBall(float dt);
 };
 #endif

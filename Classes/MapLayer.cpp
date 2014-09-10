@@ -171,7 +171,9 @@ void SnakeMapLayer::onDraw(const Mat4& transform, uint32_t flags)
 			else if (type == eType_Apple)
 				color = Color4F(1, 0, 0, 0.8f);
 			else if (type == eType_Star)
-				color = Color4F(1, 1, 0, 0.8);
+				color = Color4F(1, 1, 0, 0.8f);
+			else if (type == eType_Ball)
+				color = Color4F(0, 0, 1, 0.8f);
 
 			if (color != Color4F::BLACK)
 			{

@@ -120,7 +120,7 @@ int readUserData(void* pv, int argc, char** argv, char** col)
 {
 	for (int i = 0; i < argc; ++i)
 	{
-		if (stricmp(col[i], "score") == 0)
+		if (_stricmp(col[i], "score") == 0)
 			UserRecord::getInstance()->setScore(atoi(argv[i]));
 	}
 

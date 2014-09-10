@@ -27,6 +27,7 @@ enum eID
 	eID_Door2,
 	eID_Apple,
 	eID_Star,
+	eID_Ball,
 	eID_ItemFactory,
 	eID_ScoreLabel,
 };
@@ -118,6 +119,7 @@ struct FiniteState
 #define DoorModel "models/door.c3b"
 #define AppleModel "models/box2.c3b"
 #define StarModel "models/box2.c3b"
+#define BallModel "models/box2.c3b"
 #define BlockModel "models/box2.c3b"
 
 #endif

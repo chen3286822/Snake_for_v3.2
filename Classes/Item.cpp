@@ -99,6 +99,31 @@ void Star::effect(Snake* snake)
 	}
 }
 
+bool Ball::init()
+{
+	if (!Node::init())
+	{
+		return false;
+	}
+
+	m_pModel = Sprite3D::create(BallModel);
+	this->addChild(m_pModel, 1);
+
+	m_fDuration = 0.0f;
+	m_bValid = true;
+	return true;
+}
+
+void Ball::effect(Snake* snake)
+{
+	if (snake)
+	{
+		// set the speed rate
+		snake->addState(eFiniteState_Speed, -16.0f, 20.0f);
+		setValid(false);
+	}
+}
+
 ItemFactory* ItemFactory::create(SnakeMapLayer* snakeMap)
 {
 	if (!snakeMap)
@@ -125,6 +150,10 @@ bool ItemFactory::initWithMap(SnakeMapLayer* snakeMap)
 
 	//random time from [5, 15] seconds, after the time, an apple appears
 	m_fTimeToAddApple = rand() % 11 + 5.0f;
+	//random time from [0, 10] seconds, after the time, a star appears
+	m_fTimeToAddStar = rand() % 11;
+	//random time from [2, 11] seconds, after the time, a ball appears
+	m_fTimeToAddBall = rand() % 10 + 2.0f;
 	return true;
 }
 
@@ -145,6 +174,8 @@ Item* ItemFactory::getItem(cocos2d::Vec2 index)
 		return m_pApple;
 	else if (m_pStar && m_pStar->getIndex() == index)
 		return m_pStar;
+	else if (m_pBall && m_pBall->getIndex() == index)
+		return m_pBall;
 
 	return nullptr;
 }
@@ -159,6 +190,8 @@ int ItemFactory::getItemsNumber()
 	if (m_pApple)
 		number++;
 	if (m_pStar)
+		number++;
+	if (m_pBall)
 		number++;
 
 	return number;
@@ -178,16 +211,19 @@ void ItemFactory::produce(float dt)
 	//add the speed star
 	addStar(dt);
 
+	//add the slow down ball
+	addBall(dt);
+
 	//check and remove expired item
 	removeExpiredItem(dt);
 }
 
 void ItemFactory::removeExpiredItem(float dt)
 {
-	//check the apple's duration
+	//remove all the item that is out of time
 	if (m_pApple)
 	{
-		if (m_pApple->getDuration() <= 0)
+		if (m_pApple->getDuration() <= 0 && !m_bRemovingApple)
 			eatApple();
 		else
 		{
@@ -196,10 +232,17 @@ void ItemFactory::removeExpiredItem(float dt)
 	}
 	if (m_pStar)
 	{
-		if (m_pStar->getDuration() <= 0)
+		if (m_pStar->getDuration() <= 0 && !m_bRemovingStar)
 			eatStar();
 		else
 			m_pStar->setDuration(m_pStar->getDuration() - dt);
+	}
+	if (m_pBall)
+	{
+		if (m_pBall->getDuration() <= 0 && !m_bRemovingBall)
+			eatBall();
+		else
+			m_pBall->setDuration(m_pBall->getDuration() - dt);
 	}
 }
 
@@ -373,6 +416,8 @@ void ItemFactory::eatApple()
 
 	// set the apple invalid
 	m_pApple->setValid(false);
+	// set the removing variable to true to avoid call this function again while removing the item
+	m_bRemovingApple = true;
 
 	// zoom out the apple
 	auto scaleSmall = ScaleTo::create(0.5f, 0.1f);
@@ -383,13 +428,18 @@ void ItemFactory::eatApple()
 
 void ItemFactory::removeApple()
 {
-	//here we do not need to reset the map grid type, because it will be set later in Snake::resetGridType
+	//here we should reset the grid type because the item maybe disappear itself
+	//if the snake eat the item, the type will be set to eType_Snake later in the Snake::resetGridType
+	m_pSnakeMap->setGridType(m_pApple->getIndex(), eType_Empty);
+
 	this->removeChildByTag(eID_Apple);
 	m_pApple = nullptr;
 
 	//reset the time to add the apple
 	//random time from [5, 15] seconds, after the time, an apple appears
 	m_fTimeToAddApple = rand() % 11 + 5.0f;
+	//reset the removing variable
+	m_bRemovingApple = false;
 }
 
 void ItemFactory::addStar(float dt)
@@ -447,6 +497,8 @@ void ItemFactory::eatStar()
 
 	// set the star invalid
 	m_pStar->setValid(false);
+	// set the removing variable to true to avoid call this function again while removing the item
+	m_bRemovingStar = true;
 
 	// zoom out the star
 	auto scaleSmall = ScaleTo::create(0.5f, 0.1f);
@@ -457,11 +509,99 @@ void ItemFactory::eatStar()
 
 void ItemFactory::removeStar()
 {
+	//here we should reset the grid type because the item maybe disappear itself
+	//if the snake eat the item, the type will be set to eType_Snake later in the Snake::resetGridType
+	m_pSnakeMap->setGridType(m_pStar->getIndex(), eType_Empty);
+
 	//here we do not need to reset the map grid type, because it will be set later in Snake::resetGridType
 	this->removeChildByTag(eID_Star);
 	m_pStar = nullptr;
 
 	//reset the time to add the star
-	//random time from [5, 15] seconds, after the time, a star appears
-	m_fTimeToAddStar = rand() % 11 + 5.0f;
+	//random time from [0, 10] seconds, after the time, a star appears
+	m_fTimeToAddStar = rand() % 11;
+	//reset the removing variable
+	m_bRemovingStar = false;
+}
+
+void ItemFactory::addBall(float dt)
+{
+	//check if the ball exist
+	if (m_pBall)
+		return;
+
+	//check if the random time has finished
+	if (m_fTimeToAddBall > 0)
+	{
+		m_fTimeToAddBall -= dt;
+		return;
+	}
+
+	// it's time to add ball, check the empty grid
+	Snake* snake = m_pSnakeMap->getSnake();
+	if (!snake)
+		return;
+	int left = m_pSnakeMap->getMovableNumbers() - snake->getLength();
+
+	//no empty grids left
+	if (left <= 0)
+		return;
+
+	//set the star index
+	int index = (int)(rand() % left + 1);
+	auto mapIndex = m_pSnakeMap->getEmptyGridIndex(index);
+
+	//create star model
+	m_pBall = Ball::create();
+	this->addChild(m_pBall, 1, eID_Ball);
+	m_pBall->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*mapIndex);
+	m_pBall->setIndex(mapIndex);
+
+	//add a scale animation
+	m_pBall->setScale(0.1f);
+	auto scaleBig = ScaleTo::create(0.7f, 1.2f);
+	auto scaleBack = ScaleTo::create(0.3f, 1.0f);
+	auto sequence = Sequence::create(scaleBig, scaleBack, nullptr);
+	m_pBall->runAction(sequence);
+
+	//set the grid type
+	m_pSnakeMap->setGridType(mapIndex, eType_Ball);
+
+	//set the duration from [15, 25] seconds
+	auto duration = rand() % 16 + 10.0f;
+	m_pBall->setDuration(duration);
+}
+
+void ItemFactory::eatBall()
+{
+	//stop ball's actions first
+	m_pBall->stopAllActions();
+
+	// set the ball invalid
+	m_pBall->setValid(false);
+	// set the removing variable to true to avoid call this function again while removing the item
+	m_bRemovingBall = true;
+
+	// zoom out the ball
+	auto scaleSmall = ScaleTo::create(0.5f, 0.1f);
+	auto doneAction = CallFunc::create(CC_CALLBACK_0(ItemFactory::removeBall, this));
+	auto sequenceAction = Sequence::create(scaleSmall, doneAction, nullptr);
+	m_pBall->runAction(sequenceAction);
+}
+
+void ItemFactory::removeBall()
+{
+	//here we should reset the grid type because the item maybe disappear itself
+	//if the snake eat the item, the type will be set to eType_Snake later in the Snake::resetGridType
+	m_pSnakeMap->setGridType(m_pBall->getIndex(), eType_Empty);
+
+	//here we do not need to reset the map grid type, because it will be set later in Snake::resetGridType
+	this->removeChildByTag(eID_Ball);
+	m_pBall = nullptr;
+
+	//reset the time to add the ball
+	//random time from [2, 11] seconds, after the time, a ball appears
+	m_fTimeToAddBall = rand() % 10 + 2.0f;
+	//reset the removing variable
+	m_bRemovingBall = false;
 }
