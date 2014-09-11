@@ -3,7 +3,10 @@
 #include "Snake.h"
 #include "Item.h"
 #include "UserRecord.h"
+#include "../external/json/document.h"
+
 USING_NS_CC;
+using namespace rapidjson;
 
 bool Block::init()
 {
@@ -137,6 +140,30 @@ bool SnakeMapLayer::init()
 	// load user's data
 	UserRecord::getInstance()->changeUser("aaa");
 
+	loadMap(1);
+	return true;
+}
+
+bool SnakeMapLayer::loadMap(int level)
+{
+	auto filePath = FileUtils::getInstance()->fullPathForFilename("map/1.json");
+	auto fileContent = FileUtils::getInstance()->getStringFromFile(filePath);
+	Document d;
+	d.Parse<0>(fileContent.c_str());
+	if (d.HasParseError())
+	{
+		log("json parse wrong : %s", d.GetParseError());
+		return false;
+	}
+	if (d.IsObject() && d.HasMember("map"))
+	{
+		const rapidjson::Value &v = d["map"];
+		if (v.HasMember("width"))
+		{
+
+		}
+//		auto width = v["width"];
+	}
 	return true;
 }
 

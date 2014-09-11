@@ -46,6 +46,8 @@ public:
     // implement the "static create()" method manually
     CREATE_FUNC(SnakeMapLayer);
 
+	// load a map from configuration file
+	bool loadMap(int level);
 public:
 	virtual void update(float dt) override;
 	void onKeyReleased(cocos2d::EventKeyboard::KeyCode keycode, cocos2d::Event* event);

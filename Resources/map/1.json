@@ -1,0 +1,37 @@
+{
+    "map": {
+
+        "width": "30",
+        "height": "20",
+        "condition": {
+            "type": "0",
+            "time": "60",
+            "score": "500"
+        },
+        "grid": [
+            {
+                "door": [
+                    {
+                        "type": "0",
+                        "direction": "1",
+                        "index": "3,7",
+                        "model": "door.c3b"
+                    },
+                    {
+                        "type": "1",
+                        "direction": "3",
+                        "index": "7,7",
+                        "model": "door.c3b"
+                    }
+                ]
+            },
+            {
+                "block": {
+                    "direction": "2",
+                    "index": "6,8",
+                    "model": "box2.c3b"
+                }
+            }
+        ]
+    }
+}
