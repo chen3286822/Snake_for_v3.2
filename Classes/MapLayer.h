@@ -92,6 +92,9 @@ private:
 
 	cocos2d::EventListenerKeyboard* m_pKeyboardListener{ nullptr };
 
+	// victory condition
+	VictoryCondition m_VictoryCondition;
+
 	//init all the blocks
 	void initBlocks();
 };

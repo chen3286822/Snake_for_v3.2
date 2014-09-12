@@ -112,6 +112,39 @@ struct FiniteState
 	float m_fLeftTime;
 };
 
+enum eVictoryType
+{
+	// not set
+	eVictoryType_None,
+
+	// get specific score before time out
+	eVictoryType_TimeScore,
+
+	// get specific score
+	eVictoryType_Score,
+
+	// grow to the specific length before time out
+	eVictoryType_TimeLength,
+
+	// grow to the specific length
+	eVictoryType_Length,
+};
+
+struct VictoryCondition
+{
+	eVictoryType m_eType;
+	float m_fTime;
+	int m_nScore;
+	int m_nLength;
+	VictoryCondition()
+	{
+		m_eType = eVictoryType_None;
+		m_fTime = 0;
+		m_nLength = 0;
+		m_nScore = 0;
+	}
+};
+
 #define MAPWIDTH 30
 #define MAPHEIGHT 20
 

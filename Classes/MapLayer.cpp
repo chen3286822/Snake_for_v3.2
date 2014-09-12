@@ -158,11 +158,61 @@ bool SnakeMapLayer::loadMap(int level)
 	if (d.IsObject() && d.HasMember("map"))
 	{
 		const rapidjson::Value &v = d["map"];
-		if (v.HasMember("width"))
+		// victory condition
+		if (v.HasMember("condition"))
 		{
-
+			auto& condition = v["condition"];
+			int nType = 0;
+			if (condition.IsObject())
+			{
+				if (condition.HasMember("type"))
+				{
+					auto& type = condition["type"];
+					if (type.IsInt())
+					{
+						nType = type.GetInt();
+						m_VictoryCondition.m_eType = (eVictoryType)nType;
+					}
+				}
+				if (condition.HasMember("time"))
+				{ 
+					auto& time = condition["time"];
+					if (time.IsInt())
+						m_VictoryCondition.m_fTime = time.GetInt();
+				}
+				if (condition.HasMember("score"))
+				{
+					auto& score = condition["score"];
+					if (score.IsInt())
+						m_VictoryCondition.m_nScore = score.GetInt();
+				}
+				if (condition.HasMember("length"))
+				{
+					auto& length = condition["length"];
+					if (length.IsInt())
+						m_VictoryCondition.m_nLength = length.GetInt();
+				}
+			}
 		}
-//		auto width = v["width"];
+		// grid
+		if (v.HasMember("grids"))
+		{
+			auto& grids = v["grids"];
+			if (grids.IsArray())
+			{
+				for (int i = 0; i < grids.Size(); ++i)
+				{
+					auto& grid = grids[i];
+					// door
+					if (grid.HasMember("door"))
+					{
+
+					}
+					// block
+				}
+			}
+		}
+
 	}
 	return true;
 }

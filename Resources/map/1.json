@@ -1,14 +1,12 @@
 {
     "map": {
 
-        "width": "30",
-        "height": "20",
         "condition": {
-            "type": "0",
+            "type": "1",
             "time": "60",
             "score": "500"
         },
-        "grid": [
+        "grids": [
             {
                 "door": [
                     {
