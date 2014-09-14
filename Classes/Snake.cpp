@@ -479,6 +479,10 @@ void Snake::crawl()
 		++headPos;
 		m_lpBody.insert(headPos, m_pToAdd);
 
+		//check if complete
+		if (m_pSnakeMap->isCompleted() == eResult_Success)
+			m_pSnakeMap->die();
+
 		m_pToAdd = nullptr;
 	}
 }

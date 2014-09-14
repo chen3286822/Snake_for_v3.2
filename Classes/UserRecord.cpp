@@ -166,6 +166,17 @@ void UserRecord::addScore(int var)
 {
 	int tmp = var + m_nScore;
 	setScore(tmp);
+
+	// check if complete
+	auto scene = Director::getInstance()->getRunningScene();
+	if (scene)
+	{
+		auto layer = dynamic_cast<SnakeMapLayer*>(scene->getChildByTag(eID_SnakeMap));
+		if (layer && layer->isCompleted() == eResult_Success)
+		{
+			layer->die();
+		}
+	}
 }
 
 void UserRecord::setScore(int var, bool needUpdate)

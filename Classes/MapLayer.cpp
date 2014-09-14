@@ -48,6 +48,8 @@ bool SnakeMapLayer::init()
 	//init the time seed
 	srand((unsigned int)time(NULL));
 
+	m_fTimer = 0;
+
 	//add keyboard event listener
 	m_pKeyboardListener = EventListenerKeyboard::create();
 	m_pKeyboardListener->onKeyReleased = CC_CALLBACK_2(SnakeMapLayer::onKeyReleased, this);
@@ -155,6 +157,8 @@ bool SnakeMapLayer::loadMap(int level)
 		log("json parse wrong : %s", d.GetParseError());
 		return false;
 	}
+
+	m_VictoryCondition.clear();
 	if (d.IsObject() && d.HasMember("map"))
 	{
 		const rapidjson::Value &v = d["map"];
@@ -200,7 +204,7 @@ bool SnakeMapLayer::loadMap(int level)
 			auto& grids = v["grids"];
 			if (grids.IsArray())
 			{
-				for (int i = 0; i < grids.Size(); ++i)
+				for (unsigned int i = 0; i < grids.Size(); ++i)
 				{
 					auto& grid = grids[i];
 					// door
@@ -302,6 +306,7 @@ void SnakeMapLayer::die()
 {
 	//pause the snake
 	m_pSnake->pauseAll();
+	unscheduleUpdate();
 
 	auto restartLabel = Label::createWithSystemFont("Restart", "Arial", 20);
 	auto restartItem = MenuItemLabel::create(restartLabel, CC_CALLBACK_1(SnakeMapLayer::restart, this));
@@ -424,6 +429,11 @@ void SnakeMapLayer::update(float dt)
 {
 	if (m_pItemFactory)
 		m_pItemFactory->produce(dt);
+
+	m_fTimer += dt;
+
+	if (isCompleted() == eResult_Fail)
+		die();
 }
 
 void SnakeMapLayer::onKeyReleased(EventKeyboard::KeyCode keycode, Event* event)
@@ -600,4 +610,45 @@ void SnakeMapLayer::updateUIData(int label)
 		}
 	}
 
+}
+
+eResult SnakeMapLayer::isCompleted()
+{
+	eResult result = eResult_None;
+
+	switch (m_VictoryCondition.m_eType)
+	{
+	case eVictoryType_Length:
+	{
+		if (m_pSnake->getLength() >= m_VictoryCondition.m_nLength)
+			result = eResult_Success;
+	}
+		break;
+	case eVictoryType_Score:
+	{
+		if (UserRecord::getInstance()->getScore() >= m_VictoryCondition.m_nScore)
+			result = eResult_Success;
+	}
+		break;
+	case eVictoryType_TimeScore:
+	{
+		if (m_fTimer >= m_VictoryCondition.m_fTime)
+			result = eResult_Fail;
+		else if (UserRecord::getInstance()->getScore() >= m_VictoryCondition.m_nScore)
+			result = eResult_Success;
+	}
+		break;
+	case eVictoryType_TimeLength:
+	{
+		if (m_fTimer >= m_VictoryCondition.m_fTime)
+			result = eResult_Fail;
+		else if (m_pSnake->getLength() >= m_VictoryCondition.m_nLength)
+			result = eResult_Success;
+	}
+		break;
+	default:
+		break;
+	}
+
+	return result;
 }

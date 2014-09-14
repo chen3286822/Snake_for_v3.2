@@ -2,22 +2,22 @@
     "map": {
 
         "condition": {
-            "type": "1",
-            "time": "60",
-            "score": "500"
+            "type": 3,
+            "time": 60,
+            "length": 4
         },
         "grids": [
             {
                 "door": [
                     {
-                        "type": "0",
-                        "direction": "1",
+                        "type": 0,
+                        "direction": 1,
                         "index": "3,7",
                         "model": "door.c3b"
                     },
                     {
-                        "type": "1",
-                        "direction": "3",
+                        "type": 1,
+                        "direction": 3,
                         "index": "7,7",
                         "model": "door.c3b"
                     }
@@ -25,7 +25,7 @@
             },
             {
                 "block": {
-                    "direction": "2",
+                    "direction": 2,
                     "index": "6,8",
                     "model": "box2.c3b"
                 }

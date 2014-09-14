@@ -112,6 +112,18 @@ struct FiniteState
 	float m_fLeftTime;
 };
 
+enum eResult
+{ 
+	// go on playing
+	eResult_None,
+
+	// complete the level
+	eResult_Success,
+
+	// failed
+	eResult_Fail,
+};
+
 enum eVictoryType
 {
 	// not set
@@ -136,12 +148,16 @@ struct VictoryCondition
 	float m_fTime;
 	int m_nScore;
 	int m_nLength;
-	VictoryCondition()
+	void clear()
 	{
 		m_eType = eVictoryType_None;
 		m_fTime = 0;
 		m_nLength = 0;
 		m_nScore = 0;
+	}
+	VictoryCondition()
+	{
+		clear();
 	}
 };
 

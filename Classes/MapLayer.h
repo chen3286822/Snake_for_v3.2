@@ -78,6 +78,9 @@ public:
 
 	// update UI data, label = eID_All means all the UI data should be updated
 	void updateUIData(int label = eID_All);
+
+	// check if successfully or failed complete the level
+	eResult isCompleted();
 protected:
 	//for debugging
 	void onDraw(const cocos2d::Mat4& transform, uint32_t flags);
@@ -94,6 +97,9 @@ private:
 
 	// victory condition
 	VictoryCondition m_VictoryCondition;
+
+	// time recorder
+	float m_fTimer{ 0 };
 
 	//init all the blocks
 	void initBlocks();
