@@ -13,13 +13,13 @@
                         "type": 0,
                         "direction": 1,
                         "index": "3,7",
-                        "model": "door.c3b"
+                        "model": "models/door.c3b"
                     },
                     {
                         "type": 1,
                         "direction": 3,
                         "index": "7,7",
-                        "model": "door.c3b"
+                        "model": "models/door.c3b"
                     }
                 ]
             },
@@ -27,7 +27,7 @@
                 "block": {
                     "direction": 2,
                     "index": "6,8",
-                    "model": "box2.c3b"
+                    "model": "models/box2.c3b"
                 }
             }
         ]

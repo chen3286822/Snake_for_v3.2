@@ -36,9 +36,8 @@ Door* Door::create(std::string model)
 	}
 	else
 	{
-		delete pRet;
-		pRet = NULL;
-		return NULL;
+		CC_SAFE_DELETE(pRet);
+		return nullptr;
 	}
 }
 
@@ -371,7 +370,7 @@ void ItemFactory::addDoor()
 	m_pDoors.second->setOtherDoor(m_pDoors.first);
 }
 
-void ItemFactory::addDoor(eID doorID, eDirection dir, cocos2d::Vec2 pos, std::string model = DoorModel)
+void ItemFactory::addDoor(eID doorID, eDirection dir, cocos2d::Vec2 pos, std::string model)
 {
 	if (doorID != eID_Door1 && doorID != eID_Door2)
 		return;
@@ -390,8 +389,8 @@ void ItemFactory::addDoor(eID doorID, eDirection dir, cocos2d::Vec2 pos, std::st
 
 	if (ppDoorToAdd)
 	{
-		Door* pDoorToAdd = *ppDoorToAdd;
-		pDoorToAdd = Door::create(model);
+		Door* pDoorToAdd = Door::create(model);
+		*ppDoorToAdd = pDoorToAdd;
 		this->addChild(pDoorToAdd, 1, doorID);
 		pDoorToAdd->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*pos);
 		pDoorToAdd->setIndex(pos);
@@ -406,8 +405,10 @@ void ItemFactory::addDoor(eID doorID, eDirection dir, cocos2d::Vec2 pos, std::st
 	}
 
 	//connect the two doors
-	m_pDoors.first->setOtherDoor(m_pDoors.second);
-	m_pDoors.second->setOtherDoor(m_pDoors.first);
+	if (m_pDoors.first)
+		m_pDoors.first->setOtherDoor(m_pDoors.second);
+	if (m_pDoors.second)
+		m_pDoors.second->setOtherDoor(m_pDoors.first);
 }
 
 void ItemFactory::removeDoor(eID doorID)

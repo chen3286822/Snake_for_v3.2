@@ -17,8 +17,10 @@ class Block : public cocos2d::Node
 {
 public:
 	CREATE_FUNC(Block);
+	static Block* create(std::string model);
 
 	virtual bool init() override;
+	virtual bool initWithModel(std::string model);
 
 	// the map index
 	CC_SYNTHESIZE(cocos2d::Vec2, m_Index, Index);
@@ -102,7 +104,7 @@ private:
 	float m_fTimer{ 0 };
 
 	//init all the blocks
-	void initBlocks();
+	void addBlock(eDirection dir, cocos2d::Vec2 pos, std::string model=BlockModel);
 };
 
 #endif // __HELLOWORLD_SCENE_H__

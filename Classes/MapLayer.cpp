@@ -8,6 +8,21 @@
 USING_NS_CC;
 using namespace rapidjson;
 
+Block* Block::create(std::string model)
+{
+	Block *pRet = new Block();
+	if (pRet && pRet->initWithModel(model))
+	{
+		pRet->autorelease();
+		return pRet;
+	}
+	else
+	{
+		CC_SAFE_DELETE(pRet);
+		return nullptr;
+	}
+}
+
 bool Block::init()
 {
 	if (!Node::init())
@@ -15,6 +30,18 @@ bool Block::init()
 
 	// create block model
 	m_pModel = Sprite3D::create(BlockModel);
+	this->addChild(m_pModel, 1);
+
+	return true;
+}
+
+bool Block::initWithModel(std::string model)
+{
+	if (!Node::init())
+		return false;
+
+	// create block model
+	m_pModel = Sprite3D::create(model);
 	this->addChild(m_pModel, 1);
 
 	return true;
@@ -100,9 +127,6 @@ bool SnakeMapLayer::init()
 	}
 #endif
 
-	//init blocks
-	initBlocks();
-
 	//create the snake
 	m_pSnake = Snake::create(this);
 	this->addChild(m_pSnake, 2, eID_Snake);
@@ -159,6 +183,7 @@ bool SnakeMapLayer::loadMap(int level)
 	}
 
 	m_VictoryCondition.clear();
+	m_lBlocks.clear();
 	if (d.IsObject() && d.HasMember("map"))
 	{
 		const rapidjson::Value &v = d["map"];
@@ -242,7 +267,10 @@ bool SnakeMapLayer::loadMap(int level)
 									auto& index = door["index"];
 									if (index.IsString())
 									{
-										
+										char* szIndex = strtok(const_cast<char*>(index.GetString()), ",");
+										pos.x = atoi(szIndex);
+										szIndex = strtok(nullptr, ",");
+										pos.y = atoi(szIndex);
 									}
 								}
 								if (door.HasMember("model"))
@@ -257,6 +285,40 @@ bool SnakeMapLayer::loadMap(int level)
 						}
 					}
 					// block
+					else if (grid.HasMember("block"))
+					{
+						auto& block = grid["block"];
+						if (block.IsObject())
+						{
+							eDirection dir = eDir_None;
+							Vec2 pos;
+							std::string blockModel;
+							if (block.HasMember("direction"))
+							{
+								auto& direction = block["direction"];
+								if (direction.IsInt())
+									dir = (eDirection)(direction.GetInt());
+							}
+							if (block.HasMember("index"))
+							{
+								auto& index = block["index"];
+								if (index.IsString())
+								{
+									char* szIndex = strtok(const_cast<char*>(index.GetString()), ",");
+									pos.x = atoi(szIndex);
+									szIndex = strtok(nullptr, ",");
+									pos.y = atoi(szIndex);
+								}
+							}
+							if (block.HasMember("model"))
+							{
+								auto& model = block["model"];
+								if (model.IsString())
+									blockModel = model.GetString();
+							}
+							addBlock(dir, pos, blockModel);
+						}
+					}
 				}
 			}
 		}
@@ -265,18 +327,19 @@ bool SnakeMapLayer::loadMap(int level)
 	return true;
 }
 
-void SnakeMapLayer::initBlocks()
+void SnakeMapLayer::addBlock(eDirection dir, cocos2d::Vec2 pos, std::string model)
 {
-	m_lBlocks.clear();
+	if (dir == eDir_None)
+		return;
 
 	auto block = Block::create();
 	this->addChild(block, 2);
-	block->setIndex(Vec2(5, 5));
-	block->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getGridLength() * block->getIndex() + VisibleRect::getHalfGridVec());
+	block->setIndex(pos);
+	block->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getGridLength() *pos + VisibleRect::getHalfGridVec());
 	m_lBlocks.push_back(block);
 
 	//set grid type
-	setGridType(block->getIndex(), eType_Blocked);
+	setGridType(pos, eType_Blocked);
 }
 
 void SnakeMapLayer::draw(Renderer* renderer, const Mat4 &transform, uint32_t flags)
