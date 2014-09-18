@@ -210,7 +210,51 @@ bool SnakeMapLayer::loadMap(int level)
 					// door
 					if (grid.HasMember("door"))
 					{
+						auto& doors = grid["door"];
+						if (doors.IsArray())
+						{
+							for (unsigned int j = 0; j < doors.Size(); ++j)
+							{
+								auto& door = doors[j];
+								eID doorID = eID_All;
+								eDirection dir = eDir_None;
+								Vec2 pos;
+								std::string doorModel;
+								if (door.HasMember("type"))
+								{
+									auto& type = door["type"];
+									if (type.IsInt())
+									{
+										if (type.GetInt() == 0)
+											doorID = eID_Door1;
+										else if (type.GetInt() == 1)
+											doorID = eID_Door2;
+									}
+								}
+								if (door.HasMember("direction"))
+								{
+									auto& direction = door["direction"];
+									if (direction.IsInt())
+										dir = (eDirection)direction.GetInt();
+								}
+								if (door.HasMember("index"))
+								{
+									auto& index = door["index"];
+									if (index.IsString())
+									{
+										
+									}
+								}
+								if (door.HasMember("model"))
+								{
+									auto& model = door["model"];
+									if (model.IsString())
+										doorModel = model.GetString();
+								}
 
+								m_pItemFactory->addDoor(doorID, dir, pos, doorModel);
+							}
+						}
 					}
 					// block
 				}

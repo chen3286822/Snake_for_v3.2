@@ -26,6 +26,22 @@ void Food::effect(Snake* snake)
 
 }
 
+Door* Door::create(std::string model)
+{
+	Door *pRet = new Door();
+	if (pRet && pRet->initWithModel(model))
+	{
+		pRet->autorelease();
+		return pRet;
+	}
+	else
+	{
+		delete pRet;
+		pRet = NULL;
+		return NULL;
+	}
+}
+
 bool Door::init()
 {
 	if (!Node::init())
@@ -35,6 +51,23 @@ bool Door::init()
 
 	//set  the food model
 	m_pModel = Sprite3D::create(DoorModel);
+	this->addChild(m_pModel, 1);
+
+	m_eTransferDirection = eDir_None;
+	m_otherDoor = nullptr;
+
+	return true;
+}
+
+bool Door::initWithModel(std::string model)
+{
+	if (!Node::init())
+	{
+		return false;
+	}
+
+	//set  the food model
+	m_pModel = Sprite3D::create(model);
 	this->addChild(m_pModel, 1);
 
 	m_eTransferDirection = eDir_None;
@@ -203,7 +236,8 @@ void ItemFactory::produce(float dt)
 	addFood();
 
 	//add the transfer doors
-	addDoor();
+	//load from json
+	//addDoor();
 
 	//add the score apple
 	addApple(dt);
@@ -310,8 +344,7 @@ void ItemFactory::addDoor()
 	m_pDoors.first->setIndex(mapIndex);
 
 	//set the door transfer direction
-	//auto transferDir = randomDirection();
-	auto transferDir = eDir_Up;
+	auto transferDir = randomDirection();
 	m_pDoors.first->setTransferDirection(transferDir);
 	//actual door direction is opposite to transfer direction
 	m_pDoors.first->setRotation(arcByDirection(oppositeDirection(transferDir)));
@@ -327,8 +360,7 @@ void ItemFactory::addDoor()
 	m_pDoors.second->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*mapIndex);
 	m_pDoors.second->setIndex(mapIndex);
 
-	//transferDir = randomDirection();
-	transferDir = eDir_Right;
+	transferDir = randomDirection();
 	m_pDoors.second->setTransferDirection(transferDir);
 	m_pDoors.second->setRotation(arcByDirection(oppositeDirection(transferDir)));
 
@@ -339,16 +371,71 @@ void ItemFactory::addDoor()
 	m_pDoors.second->setOtherDoor(m_pDoors.first);
 }
 
-void ItemFactory::removeDoor()
+void ItemFactory::addDoor(eID doorID, eDirection dir, cocos2d::Vec2 pos, std::string model = DoorModel)
 {
-	//reset the grid type
-	m_pSnakeMap->setGridType(m_pDoors.first->getIndex(), eType_Empty);
-	m_pSnakeMap->setGridType(m_pDoors.second->getIndex(), eType_Empty);
+	if (doorID != eID_Door1 && doorID != eID_Door2)
+		return;
 
-	this->removeChildByTag(eID_Door1);
-	m_pDoors.first = nullptr;
-	this->removeChildByTag(eID_Door2);
-	m_pDoors.second = nullptr;
+	if (dir == eDir_None || (pos.x < 0 || pos.x >= MAPWIDTH || pos.y < 0 || pos.y >= MAPHEIGHT))
+		return;
+
+	// remove origin door
+	removeDoor(doorID);
+
+	Door** ppDoorToAdd = nullptr;
+	if (doorID == eID_Door1)
+		ppDoorToAdd = &m_pDoors.first;
+	else if (doorID == eID_Door2)
+		ppDoorToAdd = &m_pDoors.second;
+
+	if (ppDoorToAdd)
+	{
+		Door* pDoorToAdd = *ppDoorToAdd;
+		pDoorToAdd = Door::create(model);
+		this->addChild(pDoorToAdd, 1, doorID);
+		pDoorToAdd->setPosition(VisibleRect::getVisibleRect().origin + VisibleRect::getHalfGridVec() + VisibleRect::getGridLength()*pos);
+		pDoorToAdd->setIndex(pos);
+
+		//set the door transfer direction
+		pDoorToAdd->setTransferDirection(dir);
+		//actual door direction is opposite to transfer direction
+		pDoorToAdd->setRotation(arcByDirection(oppositeDirection(dir)));
+
+		//set the grid type
+		m_pSnakeMap->setGridType(pos, eType_Door);
+	}
+
+	//connect the two doors
+	m_pDoors.first->setOtherDoor(m_pDoors.second);
+	m_pDoors.second->setOtherDoor(m_pDoors.first);
+}
+
+void ItemFactory::removeDoor(eID doorID)
+{
+	Door* pDoorToDelete = nullptr;
+	if (doorID == eID_Door1)
+	{
+		pDoorToDelete = m_pDoors.first;
+		m_pDoors.first = nullptr;
+	}
+	else if (doorID == eID_Door2)
+	{
+		pDoorToDelete = m_pDoors.second;
+		m_pDoors.second = nullptr;
+	}
+
+	if (pDoorToDelete)
+	{
+		//reset the grid type
+		m_pSnakeMap->setGridType(pDoorToDelete->getIndex(), eType_Empty);
+		this->removeChildByTag(doorID);
+	}
+}
+
+void ItemFactory::removeDoors()
+{
+	removeDoor(eID_Door1);
+	removeDoor(eID_Door2);
 }
 
 Door* ItemFactory::getDoor(cocos2d::Vec2 index)

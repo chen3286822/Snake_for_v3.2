@@ -41,8 +41,10 @@ class Door : public Item
 {
 public:
 	CREATE_FUNC(Door);
+	static Door* create(std::string model);
 
 	virtual bool init() override;
+	virtual bool initWithModel(std::string model);
 	virtual void effect(Snake* snake) override;
 
 	//the direction that snake can cross the door, if the snake's direction isn't equal to this, the door is blocked
@@ -104,6 +106,9 @@ public:
 	//remove the food
 	void eatFood();
 
+	// add door
+	void addDoor(eID doorID, eDirection dir, cocos2d::Vec2 pos, std::string model = DoorModel);
+
 	//get the door
 	Door* getDoor(cocos2d::Vec2 index);
 
@@ -135,14 +140,17 @@ private:
 
 	//remove apple
 	void removeApple();
-	//remove the door
-	void removeDoor();
+	//remove door
+	void removeDoor(eID doorID);
+	//remove all the door
+	void removeDoors();
 	//remove star
 	void removeStar();
 	//remove ball
 	void removeBall();
 	
 	void addFood();
+	// add doors randomly
 	void addDoor();
 	// apple exist in finite time
 	void addApple(float dt);
