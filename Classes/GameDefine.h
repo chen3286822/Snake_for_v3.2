@@ -1,6 +1,8 @@
 #ifndef __GAMEDEFINE_H__
 #define __GAMEDEFINE_H__
 
+#include "VisibleRect.h"
+
 enum eDirection
 {
 	eDir_None,
@@ -21,6 +23,10 @@ enum eID
 {
 	eID_All = -1,
 	eID_SnakeMap,
+	eID_MainLayer,
+	eID_SelectLevelLayer,
+	eID_SelectLevelBg,
+	eID_LevelView,
 	eID_Snake,
 	eID_Food,
 	eID_Door1,

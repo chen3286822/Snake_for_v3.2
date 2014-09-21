@@ -2,7 +2,6 @@
 #include "GameDefine.h"
 #include "MapLayer.h"
 #include "Snake.h"
-#include "VisibleRect.h"
 #include "UserRecord.h"
 
 USING_NS_CC;

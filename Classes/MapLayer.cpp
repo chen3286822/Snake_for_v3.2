@@ -1,5 +1,4 @@
 #include "MapLayer.h"
-#include "VisibleRect.h"
 #include "Snake.h"
 #include "Item.h"
 #include "UserRecord.h"

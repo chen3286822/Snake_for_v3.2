@@ -1,5 +1,5 @@
 #include "AppDelegate.h"
-#include "MapLayer.h"
+#include "MainLayer.h"
 
 USING_NS_CC;
 
@@ -31,7 +31,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
 	director->setProjection(Director::Projection::_3D);
 
     // create a scene. it's an autorelease object
-    auto scene = SnakeMapLayer::createScene();
+    auto scene = MainLayer::createScene();
 
     // run
     director->runWithScene(scene);

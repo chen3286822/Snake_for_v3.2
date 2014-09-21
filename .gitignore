@@ -219,6 +219,7 @@ pip-log.txt
 
 
 cocos2d/
+cocos2d/extensions
 proj.android/gen/com/cff/org/BuildConfig.java
 proj.android/gen/com/cff/org/R.java
 proj.android/libs/armeabi/libcocos2dcpp.so

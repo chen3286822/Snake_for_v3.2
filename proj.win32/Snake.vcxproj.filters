@@ -54,6 +54,9 @@
     <ClCompile Include="..\Classes\MainLayer.cpp">
       <Filter>Classes\Element</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\SelectLevelLayer.cpp">
+      <Filter>Classes\Element</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -87,6 +90,9 @@
       <Filter>Classes\sqlite3</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\MainLayer.h">
+      <Filter>Classes\Element</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\SelectLevelLayer.h">
       <Filter>Classes\Element</Filter>
     </ClInclude>
   </ItemGroup>
