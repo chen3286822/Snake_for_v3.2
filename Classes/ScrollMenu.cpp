@@ -19,10 +19,42 @@ ScrollMenu* ScrollMenu::createWithEffectiveRange(cocos2d::Vec2 leftDownPos, coco
 
 bool ScrollMenu::initWithEffectiveRange(cocos2d::Vec2 leftDownPos, cocos2d::Size rectSize)
 {
-	if (!Menu::init())
+	if (!Layer::init())
 		return false;
 
+	_enabled = true;
+	// menu in the center of the screen
+	Size s = Director::getInstance()->getWinSize();
+
+	this->ignoreAnchorPointForPosition(true);
+	setAnchorPoint(Vec2(0.5f, 0.5f));
+	this->setContentSize(s);
+
+	setPosition(Vec2(s.width / 2, s.height / 2));
+
+
+	_selectedItem = nullptr;
+	_state = Menu::State::WAITING;
+
+	// enable cascade color and opacity on menus
+	setCascadeColorEnabled(true);
+	setCascadeOpacityEnabled(true);
+
+
+	auto touchListener = EventListenerTouchOneByOne::create();
+	// here we do not swallow the touches, so parent tableview will get them
+	touchListener->setSwallowTouches(false);
+
+	touchListener->onTouchBegan = CC_CALLBACK_2(ScrollMenu::onTouchBegan, this);
+	touchListener->onTouchMoved = CC_CALLBACK_2(ScrollMenu::onTouchMoved, this);
+	touchListener->onTouchEnded = CC_CALLBACK_2(ScrollMenu::onTouchEnded, this);
+	touchListener->onTouchCancelled = CC_CALLBACK_2(ScrollMenu::onTouchCancelled, this);
+
+	_eventDispatcher->addEventListenerWithSceneGraphPriority(touchListener, this);
+
+
 	m_iEffectiveRange.setRect(leftDownPos.x, leftDownPos.y, rectSize.width, rectSize.height);
+
 	return true;
 }
 

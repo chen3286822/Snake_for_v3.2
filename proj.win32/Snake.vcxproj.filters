@@ -60,6 +60,9 @@
     <ClCompile Include="..\Classes\ScrollMenu.cpp">
       <Filter>Classes\Help</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\TouchTableView.cpp">
+      <Filter>Classes\Help</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -99,6 +102,9 @@
       <Filter>Classes\Element</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\ScrollMenu.h">
+      <Filter>Classes\Help</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\TouchTableView.h">
       <Filter>Classes\Help</Filter>
     </ClInclude>
   </ItemGroup>

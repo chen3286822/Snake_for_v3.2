@@ -15,7 +15,7 @@ public:
 	virtual void onTouchEnded(cocos2d::Touch* touch, cocos2d::Event* event) override;
 	virtual void onTouchCancelled(cocos2d::Touch* touch, cocos2d::Event* event) override;
 	virtual void onTouchMoved(cocos2d::Touch* touch, cocos2d::Event* event) override;
-private:
+protected:
 	cocos2d::Rect m_iEffectiveRange;
 	cocos2d::Vec2 m_iStartPos;
 	bool m_bTouchMoved{ false };

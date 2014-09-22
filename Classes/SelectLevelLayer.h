@@ -24,6 +24,9 @@ private:
 	void backToMainLayer(cocos2d::Ref* pSender);
 	cocos2d::Vec2 m_iTableViewLeftDownPos;
 	cocos2d::Size m_iTableViewSize;
+	static const int m_snCellNum = 30;
+	// if the cell appeared before, if true, reset the cell variable m_bMoved
+	bool m_bAppearBefore[m_snCellNum];
 };
 
 
@@ -32,9 +35,15 @@ class LevelTableViewCell : public cocos2d::extension::TableViewCell
 public:
 	static LevelTableViewCell* createWithTableViewRect(cocos2d::Vec2 leftDownPos, cocos2d::Size rectSize);
 	virtual bool initWithTableViewRect(cocos2d::Vec2 leftDownPos, cocos2d::Size rectSize);
-
+	virtual void onEnter() override;
+	void resetAppeared();
 private:
 	void chooseLevel(cocos2d::Ref* pSender, int index);
+	cocos2d::Menu* m_pMenu{ nullptr };
+	static const int m_snItemNum = 3;
+	cocos2d::MenuItemImage* m_pItems[m_snItemNum];
+	// save the states that if menu items ever moved before
+	bool m_bAppeared[m_snItemNum];
 };
 
 #endif

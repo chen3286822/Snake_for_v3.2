@@ -2,6 +2,7 @@
 #include "GameDefine.h"
 #include "MainLayer.h"
 #include "ScrollMenu.h"
+#include "TouchTableView.h"
 
 USING_NS_CC;
 USING_NS_CC_EXT;
@@ -35,10 +36,27 @@ bool SelectLevelLayer::init()
 
 	auto backItem = MenuItemImage::create("back.png", "back.png", CC_CALLBACK_1(SelectLevelLayer::backToMainLayer, this));
 	backItem->setAnchorPoint(Vec2(0, 1));
+	backItem->setScale(0.8f);
 	backItem->setPosition(VisibleRect::leftTop() + Vec2(-5, 5));
 	auto menu = Menu::create(backItem, nullptr);
 	this->addChild(menu, 1);
 	menu->setPosition(Vec2::ZERO);
+
+	// add up and down hint arrows
+	auto upSprite = Sprite::create("up.png");
+	upSprite->setScale(0.6f);
+	upSprite->setPosition(VisibleRect::top() - Vec2(0, 50));
+	this->addChild(upSprite, 1);
+
+	auto downSprite = Sprite::create("down.png");
+	downSprite->setScale(0.6f);
+	downSprite->setPosition(VisibleRect::bottom() + Vec2(0, 25));
+	this->addChild(downSprite, 1);
+
+	for (int i = 0; i < m_snCellNum; ++i)
+	{
+		m_bAppearBefore[i] = false;
+	}
 
 	return true;
 }
@@ -48,14 +66,14 @@ void SelectLevelLayer::onEnterTransitionDidFinish()
 	Layer::onEnterTransitionDidFinish();
 
 	// create the level table view
-	m_iTableViewLeftDownPos = Vec2(30, 0);
+	m_iTableViewLeftDownPos = Vec2(30, 40);
 	m_iTableViewSize = VisibleRect::getVisibleRect().size - Size(60.0f, 128.0f);
-	auto levelView = TableView::create(this, m_iTableViewSize);
+	auto levelView = TouchTableView::createWithSize(this, m_iTableViewSize);
 	levelView->setDirection(ScrollView::Direction::VERTICAL);
 	levelView->setPosition(m_iTableViewLeftDownPos);
 	levelView->setDelegate(this);
 	this->addChild(levelView, 1, eID_LevelView);
-	levelView->reloadData();
+	//levelView->reloadData();
 }
 
 void SelectLevelLayer::tableCellTouched(TableView* table, TableViewCell* cell)
@@ -73,6 +91,21 @@ TableViewCell* SelectLevelLayer::tableCellAtIndex(TableView *table, ssize_t idx)
 	TableViewCell *cell = table->dequeueCell();
 	if (!cell) {
 		cell = LevelTableViewCell::createWithTableViewRect(m_iTableViewLeftDownPos, m_iTableViewSize);
+		// the cell appears
+		m_bAppearBefore[idx] = true;
+	}
+	else
+	{
+		// reset the LevelTableViewCell's variable m_bMoved if the idx cell never appears before
+		if (idx < m_snCellNum && !m_bAppearBefore[idx])
+		{
+			auto levelTableViewCell = dynamic_cast<LevelTableViewCell*>(cell);
+			if (levelTableViewCell)
+			{
+				levelTableViewCell->resetAppeared();
+			}
+			m_bAppearBefore[idx] = true;
+		}
 	}
 
 	return cell;
@@ -80,7 +113,7 @@ TableViewCell* SelectLevelLayer::tableCellAtIndex(TableView *table, ssize_t idx)
 
 ssize_t SelectLevelLayer::numberOfCellsInTableView(TableView *table)
 {
-	return 3;
+	return 30;
 }
 
 void SelectLevelLayer::backToMainLayer(cocos2d::Ref* pSender)
@@ -109,26 +142,52 @@ bool LevelTableViewCell::initWithTableViewRect(Vec2 leftDownPos, Size rectSize)
 	if (! TableViewCell::init())
 		return false;
 
-	auto level1 = MenuItemImage::create("border.png", "border.png", CC_CALLBACK_1(LevelTableViewCell::chooseLevel, this, 1));
-	level1->setAnchorPoint(Vec2::ZERO);
-	level1->setPosition(Vec2(0, 0));
-
-	auto level2 = MenuItemImage::create("border.png", "border.png", CC_CALLBACK_1(LevelTableViewCell::chooseLevel, this, 2));
-	level2->setAnchorPoint(Vec2::ZERO);
-	level2->setPosition(Vec2(300, 0));
-
-	auto level3 = MenuItemImage::create("border.png", "border.png", CC_CALLBACK_1(LevelTableViewCell::chooseLevel, this, 3));
-	level3->setAnchorPoint(Vec2::ZERO);
-	level3->setPosition(Vec2(600, 0));
-	
-	auto menu = ScrollMenu::createWithEffectiveRange(leftDownPos, rectSize);
-	menu->addChild(level1, 1);
-	menu->addChild(level2, 1);
-	//menu->addChild(level3, 1);
-	menu->setPosition(Vec2::ZERO);
-	this->addChild(menu, 1);
+	m_pMenu = ScrollMenu::createWithEffectiveRange(leftDownPos, rectSize);
+	for (int i = 0; i < m_snItemNum; ++i)
+	{
+		m_pItems[i] = MenuItemImage::create("border.png", "border.png", CC_CALLBACK_1(LevelTableViewCell::chooseLevel, this, i));
+		m_pItems[i]->setAnchorPoint(Vec2::ZERO);
+		m_pItems[i]->setPosition(Vec2(975 + 300*i, 20));
+		m_pMenu->addChild(m_pItems[i], 1);
+		m_bAppeared[i] = false;
+	}
+	m_pMenu->setPosition(Vec2::ZERO);
+	this->addChild(m_pMenu, 1);
 
 	return true;
+}
+
+void LevelTableViewCell::resetAppeared()
+{
+	for (int i = 0; i < m_snItemNum; ++i)
+	{
+		m_bAppeared[i] = false;
+	}
+}
+
+void LevelTableViewCell::onEnter()
+{
+	TableViewCell::onEnter();
+
+	for (int i = 0; i < m_snItemNum; ++i)
+	{
+		if (m_pItems[i])
+		{
+			auto moveAction = m_pItems[i]->getActionByTag(eID_LevelViewItemAction1 + i);
+			if ((moveAction && !moveAction->isDone()) || m_bAppeared[i])
+			{
+				//reset the position if the action didn't "done" because the cell scrolls too fast
+				m_pItems[i]->setPosition(Vec2(15 + 300 * i, 20));
+				continue;;
+			}
+			m_pItems[i]->setPosition(Vec2(975 + 300*i, 20));
+			ActionInterval* newAction = MoveBy::create(0.8f + 0.2*i, Vec2(-960, 0));
+			ActionInterval *easeElasticOut = CCEaseExponentialOut::create(newAction);
+			easeElasticOut->setTag(eID_LevelViewItemAction1 + i);
+			m_pItems[i]->runAction(easeElasticOut);
+			m_bAppeared[i] = true;
+		}
+	}
 }
 
 void LevelTableViewCell::chooseLevel(cocos2d::Ref* pSender, int index)
