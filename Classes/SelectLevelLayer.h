@@ -2,7 +2,7 @@
 #define __SELECTLEVELLAYER_H__
 
 #include "cocos2d.h"
-#include "cocos-ext.h"
+#include "extensions/cocos-ext.h"
 
 class SelectLevelLayer : public cocos2d::Layer, public cocos2d::extension::TableViewDataSource, public cocos2d::extension::TableViewDelegate
 {
@@ -22,6 +22,19 @@ public:
 
 private:
 	void backToMainLayer(cocos2d::Ref* pSender);
+	cocos2d::Vec2 m_iTableViewLeftDownPos;
+	cocos2d::Size m_iTableViewSize;
+};
+
+
+class LevelTableViewCell : public cocos2d::extension::TableViewCell
+{
+public:
+	static LevelTableViewCell* createWithTableViewRect(cocos2d::Vec2 leftDownPos, cocos2d::Size rectSize);
+	virtual bool initWithTableViewRect(cocos2d::Vec2 leftDownPos, cocos2d::Size rectSize);
+
+private:
+	void chooseLevel(cocos2d::Ref* pSender, int index);
 };
 
 #endif
