@@ -27,6 +27,11 @@ private:
 	static const int m_snCellNum = 30;
 	// if the cell appeared before, if true, reset the cell variable m_bMoved
 	bool m_bAppearBefore[m_snCellNum];
+
+	// level numbers
+	int m_nLevelNums{ 0 };
+	// number of cells
+	int m_nTableCells{ 0 };
 };
 
 

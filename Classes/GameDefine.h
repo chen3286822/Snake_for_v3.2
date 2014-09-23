@@ -3,6 +3,15 @@
 
 #include "VisibleRect.h"
 
+#ifdef _WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#include <stdio.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#endif
+
 enum eDirection
 {
 	eDir_None,
@@ -18,6 +27,8 @@ eDirection randomDirection();
 float arcByDirection(eDirection dir);
 //get the opposited direction
 eDirection oppositeDirection(eDirection dir);
+// traversal the folder for all the file, ext means file type, e.g. "json"
+void traversalFolder(std::vector<std::string>& fileNames, std::string folderPath, std::string ext = "");
 
 enum eID
 {

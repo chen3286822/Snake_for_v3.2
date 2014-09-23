@@ -1,0 +1,35 @@
+{
+    "map": {
+
+        "condition": {
+            "type": 3,
+            "time": 60,
+            "length": 4
+        },
+        "grids": [
+            {
+                "door": [
+                    {
+                        "type": 0,
+                        "direction": 1,
+                        "index": "3,7",
+                        "model": "models/door.c3b"
+                    },
+                    {
+                        "type": 1,
+                        "direction": 3,
+                        "index": "7,7",
+                        "model": "models/door.c3b"
+                    }
+                ]
+            },
+            {
+                "block": {
+                    "direction": 2,
+                    "index": "6,8",
+                    "model": "models/box2.c3b"
+                }
+            }
+        ]
+    }
+}

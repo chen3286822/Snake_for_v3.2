@@ -65,6 +65,17 @@ void SelectLevelLayer::onEnterTransitionDidFinish()
 {
 	Layer::onEnterTransitionDidFinish();
 
+	// read level numbers
+	std::vector<std::string> vLevelFiles;
+	std::string indexFullPath = FileUtils::getInstance()->fullPathForFilename("map/index");
+	std::string filePath = indexFullPath.substr(0, indexFullPath.size() - 6);
+	traversalFolder(vLevelFiles, filePath.c_str(), "json");
+	m_nLevelNums = vLevelFiles.size();
+	if (m_nLevelNums == 0)
+		m_nTableCells = 0;
+	else
+		m_nTableCells = (m_nLevelNums - 1) / 3 + 1;
+
 	// create the level table view
 	m_iTableViewLeftDownPos = Vec2(30, 40);
 	m_iTableViewSize = VisibleRect::getVisibleRect().size - Size(60.0f, 128.0f);
@@ -113,7 +124,7 @@ TableViewCell* SelectLevelLayer::tableCellAtIndex(TableView *table, ssize_t idx)
 
 ssize_t SelectLevelLayer::numberOfCellsInTableView(TableView *table)
 {
-	return 30;
+	return m_nTableCells;
 }
 
 void SelectLevelLayer::backToMainLayer(cocos2d::Ref* pSender)
